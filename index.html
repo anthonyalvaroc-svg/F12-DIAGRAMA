@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="Generador automático de esquema de medición SPAT para formato F12M" />
+  <title>Generador Esquema SPAT - F12M</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1>Generador Automático — Esquema SPAT (F12M)</h1>
+      <p class="sub">Completa los datos y descarga la imagen lista para subir en 5.- ESQUEMA DE MEDICION.</p>
+    </header>
+
+    <div class="grid-form">
+      <div class="field">
+        <label for="sitio">Nombre del Site</label>
+        <input type="text" id="sitio" value="CANCAS" placeholder="Ej. CANCAS" />
+      </div>
+
+      <div class="field">
+        <label for="tipoTorre">Tipo de Torre</label>
+        <select id="tipoTorre">
+          <option value="auto_cuadrado" selected>1. Cuadrado grande = Autosoportada</option>
+          <option value="auto_triangulo">2. Triángulo = Autosoportada</option>
+          <option value="monopolo">3. Círculo = Monopolo</option>
+          <option value="ventada">4. Cuadrado pequeño = Ventada</option>
+          <option value="arriostrada">5. Círculo pequeño = Arriostrada</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="cantidadPozos">Cantidad de Pozos</label>
+        <select id="cantidadPozos">
+          <option value="1">1 Pozo (PT01)</option>
+          <option value="2">2 Pozos (PT01 - PT02)</option>
+          <option value="3" selected>3 Pozos (PT01 - PT03)</option>
+          <option value="4">4 Pozos (PT01 - PT04)</option>
+          <option value="5">5 Pozos (PT01 - PT05)</option>
+          <option value="6">6 Pozos (PT01 - PT06)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="val50">50% - 15MTS (Ω)</label>
+        <input type="number" step="0.01" id="val50" value="15.10" />
+      </div>
+
+      <div class="field">
+        <label for="val60">60% - 18MTS (Ω)</label>
+        <input type="number" step="0.01" id="val60" value="16.33" />
+      </div>
+
+      <div class="field">
+        <label for="val70">70% - 21MTS (Ω)</label>
+        <input type="number" step="0.01" id="val70" value="17.49" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" id="btnActualizar" type="button">Actualizar Vista</button>
+      <button class="btn-primary" id="btnDescargar" type="button">Descargar PNG</button>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="esquemaCanvas" width="960" height="1060"></canvas>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

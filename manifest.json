@@ -1,0 +1,9 @@
+{
+  "name": "Generador Esquema SPAT - F12M",
+  "short_name": "Esquema SPAT",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f2f4f8",
+  "theme_color": "#111827",
+  "lang": "es"
+}
