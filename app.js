@@ -1,17 +1,15 @@
-// Pestañas
-const tabButtons = document.querySelectorAll(".tab-btn");
-const tabPanels = document.querySelectorAll(".tab-panel");
+function activarTab(targetId, btnEl) {
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabPanels = document.querySelectorAll(".tab-panel");
+  tabButtons.forEach(b => b.classList.remove("active"));
+  tabPanels.forEach(p => p.classList.remove("active"));
+  if (btnEl) btnEl.classList.add("active");
+  const panel = document.getElementById(targetId);
+  if (panel) panel.classList.add("active");
+  dibujarTodo();
+}
 
-tabButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const targetId = btn.getAttribute("data-tab");
-    tabButtons.forEach(b => b.classList.remove("active"));
-    tabPanels.forEach(p => p.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(targetId).classList.add("active");
-    dibujarTodo();
-  });
-});
+window.activarTab = activarTab;
 
 function getSitio() {
   const val = document.getElementById("sitio").value || "SITIO";
@@ -132,9 +130,6 @@ function dibujarPuerta(ctx, x, y, ancho) {
   ctx.restore();
 }
 
-/* =========================================================
-   PESTAÑA 0: DIAGRAMA SPAT (F12M)
-   ========================================================= */
 function dibujarSpat() {
   const canvas = document.getElementById("canvasSpat");
   const ctx = canvas.getContext("2d");
@@ -278,9 +273,6 @@ function dibujarSpat() {
   ctx.restore();
 }
 
-/* =========================================================
-   PESTAÑA 1: DIAGRAMA 1 - PERÍMETRO Y COORDENADAS
-   ========================================================= */
 function dibujarEtiquetaEsquina(ctx, x, y, titulo, coordTexto, alignX = "center", alignY = "middle") {
   ctx.save();
   ctx.fillStyle = "#f8fafc";
@@ -328,7 +320,6 @@ function dibujarPerimetro() {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Título superior
   ctx.save();
   ctx.fillStyle = "#111827";
   ctx.font = "bold 20px Arial";
@@ -336,7 +327,6 @@ function dibujarPerimetro() {
   ctx.fillText(`PERÍMETRO Y COORDENADAS — ${sitio}`, canvas.width / 2, 34);
   ctx.restore();
 
-  // Rectángulo del perímetro
   const rectX = 250;
   const rectY = 175;
   const rectW = 460;
@@ -347,7 +337,6 @@ function dibujarPerimetro() {
   ctx.lineWidth = 4.5;
   ctx.strokeRect(rectX, rectY, rectW, rectH);
 
-  // Puerta de acceso superior izquierda
   const doorX = rectX + 24;
   const doorY = rectY;
   ctx.fillStyle = "#ffffff";
@@ -366,7 +355,6 @@ function dibujarPerimetro() {
   ctx.fillText("AL SITE", doorX + 32, doorY - 50);
   ctx.restore();
 
-  // Nombre del Site dentro del recuadro
   ctx.save();
   ctx.fillStyle = "#dc2626";
   ctx.font = "bold 26px Arial";
@@ -374,10 +362,8 @@ function dibujarPerimetro() {
   ctx.fillText(sitio, rectX + rectW / 2, rectY + 42);
   ctx.restore();
 
-  // Símbolo de torre al centro
   dibujarSimboloTorre(ctx, tipoTorre, rectX + rectW / 2, rectY + rectH / 2 + 10, 0.95);
 
-  // Cotas de Ancho (arriba y abajo) y Largo (izquierda y derecha)
   ctx.save();
   ctx.fillStyle = "#111827";
   ctx.font = "bold 16px Arial";
@@ -398,16 +384,12 @@ function dibujarPerimetro() {
   ctx.restore();
   ctx.restore();
 
-  // Coordenadas en las 4 esquinas: A (sup. izq), B (sup. der), C (inf. der), D (inf. izq)
   dibujarEtiquetaEsquina(ctx, rectX - 205, rectY - 65, "COORDENADA A:", coordA, "left", "top");
   dibujarEtiquetaEsquina(ctx, rectX + rectW + 20, rectY - 65, "COORDENADA B:", coordB, "left", "top");
   dibujarEtiquetaEsquina(ctx, rectX + rectW + 20, rectY + rectH + 8, "COORDENADA C:", coordC, "left", "top");
   dibujarEtiquetaEsquina(ctx, rectX - 205, rectY + rectH + 8, "COORDENADA D:", coordD, "left", "top");
 }
 
-/* =========================================================
-   PESTAÑA 2: DIAGRAMA 2 - ELEVACIÓN DE TORRE
-   ========================================================= */
 function dibujarTorreElevacion() {
   const canvas = document.getElementById("canvasTorre");
   const ctx = canvas.getContext("2d");
@@ -423,7 +405,6 @@ function dibujarTorreElevacion() {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Título superior
   ctx.save();
   ctx.fillStyle = "#111827";
   ctx.font = "bold 20px Arial";
@@ -437,7 +418,6 @@ function dibujarTorreElevacion() {
   const baseHalfW = 115;
   const topHalfW = 24;
 
-  // Línea de suelo
   ctx.save();
   ctx.strokeStyle = "#111827";
   ctx.lineWidth = 4;
@@ -446,7 +426,6 @@ function dibujarTorreElevacion() {
   ctx.lineTo(760, groundY);
   ctx.stroke();
 
-  // Pedestales / base
   const pedH = 42;
   ctx.fillStyle = "#e2e8f0";
   ctx.fillRect(cx - baseHalfW - 10, groundY - pedH, 22, pedH);
@@ -456,7 +435,6 @@ function dibujarTorreElevacion() {
 
   const towerBaseY = groundY - pedH;
 
-  // Dibujo según tipo de torre
   ctx.strokeStyle = "#111827";
   ctx.lineWidth = 3;
 
@@ -468,7 +446,6 @@ function dibujarTorreElevacion() {
     ctx.lineTo(cx + baseHalfW * 0.45, towerBaseY);
     ctx.stroke();
   } else {
-    // Celosía / Autosoportada / Ventada / Arriostrada
     ctx.beginPath();
     ctx.moveTo(cx - topHalfW, topY);
     ctx.lineTo(cx - baseHalfW, towerBaseY);
@@ -496,7 +473,6 @@ function dibujarTorreElevacion() {
       ctx.stroke();
     }
 
-    // Tirantes si es arriostrada
     if (tipoTorre === "arriostrada") {
       ctx.save();
       ctx.setLineDash([6, 5]);
@@ -511,7 +487,6 @@ function dibujarTorreElevacion() {
     }
   }
 
-  // Pararrayos superior y plataforma/antenas
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(cx, topY);
@@ -519,7 +494,6 @@ function dibujarTorreElevacion() {
   ctx.strokeRect(cx - 75, topY + 55, 150, 12);
   ctx.stroke();
 
-  // Cota ROLDANA SUPERIOR (izquierda)
   const supY = topY + 25;
   ctx.strokeStyle = "#0284c7";
   ctx.lineWidth = 2;
@@ -539,7 +513,6 @@ function dibujarTorreElevacion() {
   ctx.font = "bold 16px Arial";
   ctx.fillText(`${roldanaSup} m`, 185, supY + 16);
 
-  // Cota ROLDANA INFERIOR (derecha)
   const infY = topY + 115;
   ctx.strokeStyle = "#0284c7";
   ctx.lineWidth = 2;
@@ -559,7 +532,6 @@ function dibujarTorreElevacion() {
   ctx.font = "bold 16px Arial";
   ctx.fillText(`${roldanaInf} m`, 575, infY + 16);
 
-  // Cota ALTURA DE TORRE + BASE (extrema derecha)
   const dimX = 720;
   ctx.strokeStyle = "#111827";
   ctx.lineWidth = 2;
@@ -581,7 +553,6 @@ function dibujarTorreElevacion() {
   ctx.font = "bold 17px Arial";
   ctx.fillText(`${alturaTotal} m`, dimX + 6, (topY + groundY) / 2 + 18);
 
-  // Cota ALTURA BASE (abajo izquierda)
   ctx.fillStyle = "#111827";
   ctx.font = "bold 13px Arial";
   ctx.textAlign = "center";
@@ -596,7 +567,6 @@ function dibujarTodo() {
   dibujarTorreElevacion();
 }
 
-// Eventos de cambios y botones
 const allInputs = [
   "sitio",
   "spatTipoTorre", "cantidadPozos", "val50", "val60", "val70",
@@ -625,6 +595,8 @@ dibujarTodo();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.unregister());
+    }).catch(() => {});
   });
 }

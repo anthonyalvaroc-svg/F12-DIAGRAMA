@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#111827" />
   <meta name="description" content="Generador de esquemas SPAT (F12M), perímetro con coordenadas y elevación de torre" />
   <title>Generador Esquemas — SPAT / Perímetro / Torre</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json?v=3" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
   <div class="container">
@@ -26,12 +26,12 @@
 
     <!-- Navegación de pestañas -->
     <nav class="tabs" role="tablist">
-      <button class="tab-btn active" data-tab="tab-spat" type="button">F12M - SPAT</button>
-      <button class="tab-btn" data-tab="tab-perimetro" type="button">Diagrama 1: Perímetro y Coordenadas</button>
-      <button class="tab-btn" data-tab="tab-torre" type="button">Diagrama 2: Elevación de Torre</button>
+      <button class="tab-btn active" data-tab="tab-spat" type="button" onclick="activarTab('tab-spat', this)">1. F12M - SPAT</button>
+      <button class="tab-btn" data-tab="tab-perimetro" type="button" onclick="activarTab('tab-perimetro', this)">2. Diagrama 1: Perímetro</button>
+      <button class="tab-btn" data-tab="tab-torre" type="button" onclick="activarTab('tab-torre', this)">3. Diagrama 2: Torre</button>
     </nav>
 
-    <!-- PESTAÑA 0: F12M - SPAT -->
+    <!-- PESTAÑA 1: F12M - SPAT -->
     <section id="tab-spat" class="tab-panel active">
       <div class="grid-form">
         <div class="field">
@@ -83,7 +83,7 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 1: DIAGRAMA 1 - PERÍMETRO Y COORDENADAS -->
+    <!-- PESTAÑA 2: DIAGRAMA 1 - PERÍMETRO Y COORDENADAS -->
     <section id="tab-perimetro" class="tab-panel">
       <div class="grid-form">
         <div class="field">
@@ -138,7 +138,7 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 2: DIAGRAMA 2 - ELEVACIÓN DE TORRE -->
+    <!-- PESTAÑA 3: DIAGRAMA 2 - ELEVACIÓN DE TORRE -->
     <section id="tab-torre" class="tab-panel">
       <div class="grid-form">
         <div class="field">
@@ -183,6 +183,6 @@
     </section>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
