@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#111827" />
   <meta name="description" content="Generador de esquemas SPAT (F12M), perímetro con coordenadas y elevación de torre" />
   <title>Generador Esquemas — SPAT / Perímetro / Torre</title>
-  <link rel="manifest" href="manifest.json?v=3" />
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="manifest" href="manifest.json?v=4" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
   <div class="container">
@@ -134,7 +134,7 @@
       </div>
 
       <div class="canvas-wrap">
-        <canvas id="canvasPerimetro" width="960" height="920"></canvas>
+        <canvas id="canvasPerimetro" width="960" height="860"></canvas>
       </div>
     </section>
 
@@ -144,10 +144,10 @@
         <div class="field">
           <label for="torreTipo">Tipo de Torre</label>
           <select id="torreTipo">
-            <option value="autosoportada" selected>Autosoportada (Celosía)</option>
+            <option value="autosoportada" selected>Autosoportada</option>
             <option value="monopolo">Monopolo</option>
-            <option value="ventada">Ventada</option>
-            <option value="arriostrada">Arriostrada</option>
+            <option value="ventada">Ventada (con vientos y cámara de anclaje)</option>
+            <option value="arriostrada">Arriostrada (2 arriostradas + pedestal)</option>
           </select>
         </div>
 
@@ -178,11 +178,11 @@
       </div>
 
       <div class="canvas-wrap">
-        <canvas id="canvasTorre" width="920" height="1060"></canvas>
+        <canvas id="canvasTorre" width="960" height="1080"></canvas>
       </div>
     </section>
   </div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
