@@ -92,6 +92,10 @@ p.sub {
   margin-bottom: 14px;
 }
 
+.field[hidden] {
+  display: none;
+}
+
 .field label {
   display: block;
   font-size: 12px;

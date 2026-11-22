@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#111827" />
   <meta name="description" content="Generador de esquemas SPAT (F12M), perímetro con coordenadas y elevación de torre" />
   <title>Generador Esquemas — SPAT / Perímetro / Torre</title>
-  <link rel="manifest" href="manifest.json?v=6" />
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="manifest" href="manifest.json?v=7" />
+  <link rel="stylesheet" href="styles.css?v=7" />
 </head>
 <body>
   <div class="container">
@@ -169,22 +169,50 @@
           <input type="number" step="0.01" min="0" id="alturaBase" value="0.50" />
         </div>
 
-        <div class="field">
-          <label for="roldanaSup">Roldana Superior (m)</label>
+        <!-- Roldanas estándar (para autosoportadas) -->
+        <div class="field grp-roldana-std">
+          <label for="roldanaSup">Altura Roldana Superior (m)</label>
           <input type="number" step="0.01" min="0" id="roldanaSup" value="60.10" />
         </div>
 
-        <div class="field">
-          <label for="roldanaInf">Roldana Inferior (m)</label>
+        <div class="field grp-roldana-std">
+          <label for="roldanaInf">Altura Roldana Inferior (m)</label>
           <input type="number" step="0.01" min="0" id="roldanaInf" value="58.90" />
         </div>
 
-        <div class="field">
+        <!-- Roldanas 1, 2, 3 (exclusivo para TORRE MONOPOLO) -->
+        <div class="field grp-monopolo" hidden>
+          <label for="rol1Sup">Altura Roldana 1 Superior (m)</label>
+          <input type="number" step="0.01" min="0" id="rol1Sup" value="58.50" />
+        </div>
+        <div class="field grp-monopolo" hidden>
+          <label for="rol1Inf">Altura Roldana 1 Inferior (m)</label>
+          <input type="number" step="0.01" min="0" id="rol1Inf" value="56.00" />
+        </div>
+        <div class="field grp-monopolo" hidden>
+          <label for="rol2Sup">Altura Roldana 2 Superior (m)</label>
+          <input type="number" step="0.01" min="0" id="rol2Sup" value="52.00" />
+        </div>
+        <div class="field grp-monopolo" hidden>
+          <label for="rol2Inf">Altura Roldana 2 Inferior (m)</label>
+          <input type="number" step="0.01" min="0" id="rol2Inf" value="49.50" />
+        </div>
+        <div class="field grp-monopolo" hidden>
+          <label for="rol3Sup">Altura Roldana 3 Superior (m)</label>
+          <input type="number" step="0.01" min="0" id="rol3Sup" value="45.00" />
+        </div>
+        <div class="field grp-monopolo" hidden>
+          <label for="rol3Inf">Altura Roldana 3 Inferior (m)</label>
+          <input type="number" step="0.01" min="0" id="rol3Inf" value="42.50" />
+        </div>
+
+        <!-- Edificio y escalera gato -->
+        <div class="field grp-edificio" hidden>
           <label for="alturaEdificio">Altura Edificio sin Parapeto (m)</label>
           <input type="number" step="0.01" min="0" id="alturaEdificio" value="12.00" />
         </div>
 
-        <div class="field">
+        <div class="field grp-escalera" hidden>
           <label for="alturaEscaleraGato">Altura Escalera Gato (m)</label>
           <input type="number" step="0.01" min="0" id="alturaEscaleraGato" value="2.40" />
         </div>
@@ -198,11 +226,11 @@
       </div>
 
       <div class="canvas-wrap">
-        <canvas id="canvasTorre" width="960" height="1140"></canvas>
+        <canvas id="canvasTorre" width="960" height="1180"></canvas>
       </div>
     </section>
   </div>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

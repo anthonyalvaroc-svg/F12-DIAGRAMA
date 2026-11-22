@@ -313,23 +313,22 @@ function dibujarSpat() {
 
 /* =========================================================
    PESTAÑA 2: ESQUEMA 1 - PERÍMETRO Y COORDENADAS INCLINADAS
+   CORRECCIÓN DE MEDIDAS LATERALES Y FONDOS (sin cuadros negros)
    ========================================================= */
 function dibujarCoordInclinada(ctx, x, y, titulo, coordTexto, angleRad, w = 220, h = 64) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angleRad);
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.94)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.96)";
   ctx.strokeStyle = "#cbd5e1";
   ctx.lineWidth = 1.5;
   ctx.fillRect(-w / 2, -h / 2, w, h);
   ctx.strokeRect(-w / 2, -h / 2, w, h);
 
   setFuenteRelleno(ctx, "#111827", "center", "middle");
-  ctx.fillText(titulo, 0, -12);
-
-  setFuenteRelleno(ctx, "#111827", "center", "middle");
-  ctx.fillText(coordTexto || "-", 0, 12);
+  ctx.fillText(titulo, 0, -13);
+  ctx.fillText(coordTexto || "-", 0, 13);
   ctx.restore();
 }
 
@@ -364,8 +363,8 @@ function dibujarPerimetro() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const ratio = numAncho / numLargo;
-  const maxW = 660;
-  const maxH = 540;
+  const maxW = 640;
+  const maxH = 520;
   const minSide = 310;
   let rectW = maxW;
   let rectH = maxH;
@@ -379,18 +378,19 @@ function dibujarPerimetro() {
   }
 
   const rectX = (canvas.width - rectW) / 2;
-  const rectY = 140;
+  const rectY = 145;
 
+  // Puerta de acceso en borde superior izquierdo
   const doorW = 84;
   const doorX = rectX + 24;
   const doorY = rectY;
   dibujarPuertaDobleHorizontal(ctx, doorX, doorY, doorW, -1);
 
   ctx.save();
-  const calloutX = rectX - 30;
-  const calloutY = rectY - 82;
-  const calloutW = 180;
-  const calloutH = 44;
+  const calloutX = rectX - 24;
+  const calloutY = rectY - 84;
+  const calloutW = 190;
+  const calloutH = 42;
   ctx.fillStyle = "#ffffff";
   ctx.strokeStyle = "#64748b";
   ctx.lineWidth = 1.5;
@@ -406,6 +406,7 @@ function dibujarPerimetro() {
   ctx.fillText("PUERTA DE ACCESO", calloutX + calloutW / 2, calloutY + calloutH / 2);
   ctx.restore();
 
+  // Perímetro principal
   ctx.save();
   ctx.strokeStyle = "#111827";
   ctx.lineWidth = 4;
@@ -415,30 +416,36 @@ function dibujarPerimetro() {
   const centerRectX = rectX + rectW / 2;
   const centerRectY = rectY + rectH / 2;
 
-  ctx.save();
-  ctx.strokeStyle = "#94a3b8";
-  ctx.lineWidth = 1.2;
-  ctx.fillStyle = "#ffffff";
-
-  [rectY - 34, rectY + rectH + 12].forEach((by) => {
-    ctx.fillRect(centerRectX - 72, by, 144, 26);
-    ctx.strokeRect(centerRectX - 72, by, 144, 26);
+  // Cotas superiores e inferiores (Ancho) con fondo blanco explícito en cada caja
+  [rectY - 38, rectY + rectH + 12].forEach((by) => {
+    ctx.save();
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 1.2;
+    ctx.fillRect(centerRectX - 82, by, 164, 28);
+    ctx.strokeRect(centerRectX - 82, by, 164, 28);
     setFuenteRelleno(ctx, "#111827", "center", "middle");
-    ctx.fillText(`MTS ${ancho}`, centerRectX, by + 13);
+    ctx.fillText(`MTS ${ancho}`, centerRectX, by + 14);
+    ctx.restore();
   });
 
-  [rectX - 38, rectX + rectW + 12].forEach((bx) => {
-    ctx.fillRect(bx, centerRectY - 72, 26, 144);
-    ctx.strokeRect(bx, centerRectY - 72, 26, 144);
+  // Cotas izquierda y derecha (Largo) con fondo blanco explícito antes de rotar texto
+  [rectX - 42, rectX + rectW + 14].forEach((bx) => {
     ctx.save();
-    ctx.translate(bx + 13, centerRectY);
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 1.2;
+    ctx.fillRect(bx, centerRectY - 82, 28, 164);
+    ctx.strokeRect(bx, centerRectY - 82, 28, 164);
+
+    ctx.translate(bx + 14, centerRectY);
     ctx.rotate(-Math.PI / 2);
     setFuenteRelleno(ctx, "#111827", "center", "middle");
     ctx.fillText(`MTS ${largo}`, 0, 0);
     ctx.restore();
   });
-  ctx.restore();
 
+  // Sitio y símbolo de torre central
   const sizeMult = Math.max(0.55, Math.min(0.85, Math.min(rectW, rectH) / 480));
   ctx.save();
   setFuenteRelleno(ctx, "#dc2626", "center", "middle");
@@ -447,6 +454,7 @@ function dibujarPerimetro() {
 
   dibujarSimboloTorre(ctx, tipoTorre, centerRectX, centerRectY + 12 * sizeMult, sizeMult);
 
+  // Coordenadas inclinadas en las 4 esquinas interiores
   const diagOffsetX = Math.min(125, rectW * 0.24);
   const diagOffsetY = Math.min(78, rectH * 0.22);
   const boxW = Math.min(235, Math.max(165, rectW * 0.42));
@@ -459,25 +467,123 @@ function dibujarPerimetro() {
 }
 
 /* =========================================================
-   PESTAÑA 3: ESQUEMA 2 - ELEVACIÓN DE TORRE (8 TIPOS)
+   PESTAÑA 3: ESQUEMA 2 - ELEVACIÓN DE TORRE (8 MODELOS FIELES A IMÁGENES)
    ========================================================= */
-function dibujarRoldanaRF(ctx, x, y, radio = 18) {
+function actualizarCamposTorre() {
+  const tipo = document.getElementById("torreTipo").value;
+  const isMonopolo = tipo === "monopolo";
+  const isStdRoldana = tipo === "autosoportada_normal" || tipo === "autosoportada_encima";
+  const hasEdificio = tipo === "ventada_edificio" || tipo === "arriostrada_edificio_normal";
+  const hasEscalera = tipo === "arriostrada_escalera_gato";
+
+  document.querySelectorAll(".grp-monopolo").forEach((el) => (el.hidden = !isMonopolo));
+  document.querySelectorAll(".grp-roldana-std").forEach((el) => (el.hidden = !isStdRoldana));
+  document.querySelectorAll(".grp-edificio").forEach((el) => (el.hidden = !hasEdificio));
+  document.querySelectorAll(".grp-escalera").forEach((el) => (el.hidden = !hasEscalera));
+}
+
+function dibujarFlechaVertical(ctx, x, yTop, yBot, punteada = true) {
   ctx.save();
-  ctx.fillStyle = "#ffffff";
-  ctx.strokeStyle = "#dc2626";
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#111827";
+  ctx.fillStyle = "#111827";
+  ctx.lineWidth = 2;
+
+  // Línea vertical principal
   ctx.beginPath();
-  ctx.arc(x, y, radio, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.moveTo(x, yTop);
+  ctx.lineTo(x, yBot);
   ctx.stroke();
 
+  // Punta superior
   ctx.beginPath();
-  ctx.arc(x, y, 4, 0, Math.PI * 2);
-  ctx.fillStyle = "#dc2626";
+  ctx.moveTo(x, yTop);
+  ctx.lineTo(x - 5, yTop + 10);
+  ctx.lineTo(x + 5, yTop + 10);
+  ctx.closePath();
   ctx.fill();
 
-  setFuenteRelleno(ctx, "#dc2626", "center", "bottom");
-  ctx.fillText("RF", x, y - radio - 4);
+  // Punta inferior
+  ctx.beginPath();
+  ctx.moveTo(x, yBot);
+  ctx.lineTo(x - 5, yBot - 10);
+  ctx.lineTo(x + 5, yBot - 10);
+  ctx.closePath();
+  ctx.fill();
+
+  if (punteada) {
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(x - 25, yTop);
+    ctx.lineTo(x + 25, yTop);
+    ctx.moveTo(x - 25, yBot);
+    ctx.lineTo(x + 25, yBot);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.restore();
+}
+
+function dibujarEdificioBase(ctx, groundY, buildingBottomY, alturaEdificio) {
+  const bldX = 160;
+  const bldW = 460;
+  const bldH = buildingBottomY - groundY;
+
+  ctx.save();
+  ctx.fillStyle = "#ffffff";
+  ctx.strokeStyle = "#475569";
+  ctx.lineWidth = 2.5;
+  ctx.fillRect(bldX, groundY, bldW, bldH);
+  ctx.strokeRect(bldX, groundY, bldW, bldH);
+
+  // Losas de pisos (4 niveles) y columnas internas como en la referencia
+  const pisos = 4;
+  for (let p = 1; p < pisos; p++) {
+    const py = groundY + (bldH / pisos) * p;
+    ctx.beginPath();
+    ctx.moveTo(bldX, py);
+    ctx.lineTo(bldX + bldW, py);
+    ctx.stroke();
+  }
+  [bldX + 130, bldX + 185, bldX + 320].forEach((colX) => {
+    ctx.beginPath();
+    ctx.moveTo(colX, groundY);
+    ctx.lineTo(colX, buildingBottomY);
+    ctx.stroke();
+  });
+
+  // Ducto vertical interno punteado rojo/azul
+  ctx.setLineDash([5, 4]);
+  ctx.strokeStyle = "#dc2626";
+  ctx.beginPath();
+  ctx.moveTo(bldX + 152, groundY + 6);
+  ctx.lineTo(bldX + 152, buildingBottomY - 6);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#0284c7";
+  ctx.beginPath();
+  ctx.moveTo(bldX + 160, groundY + 6);
+  ctx.lineTo(bldX + 160, buildingBottomY - 6);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Línea de suelo inferior
+  ctx.strokeStyle = "#111827";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(80, buildingBottomY);
+  ctx.lineTo(840, buildingBottomY);
+  ctx.stroke();
+
+  // Cota ALTURA EDIFICIO SIN PARAPETO =
+  const dimX = 700;
+  dibujarFlechaVertical(ctx, dimX, groundY, buildingBottomY, true);
+  setFuenteRelleno(ctx, "#111827", "left", "middle");
+  const midY = (groundY + buildingBottomY) / 2;
+  ctx.fillText("ALTURA", dimX + 12, midY - 30);
+  ctx.fillText("EDIFICIO", dimX + 12, midY - 10);
+  ctx.fillText("SIN", dimX + 12, midY + 10);
+  ctx.fillText(`PARAPETO = ${alturaEdificio} m`, dimX + 12, midY + 30);
+
   ctx.restore();
 }
 
@@ -486,8 +592,9 @@ function dibujarTorreElevacion() {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
-  const tipoTorre = document.getElementById("torreTipo").value;
+  actualizarCamposTorre();
 
+  const tipoTorre = document.getElementById("torreTipo").value;
   const rawAlturaTotal = parseFloat(document.getElementById("alturaTorre").value);
   const rawAlturaBase = parseFloat(document.getElementById("alturaBase").value);
   const rawRoldanaSup = parseFloat(document.getElementById("roldanaSup").value);
@@ -496,7 +603,7 @@ function dibujarTorreElevacion() {
   const rawAlturaEscalera = parseFloat(document.getElementById("alturaEscaleraGato").value);
 
   const numAlturaTotal = rawAlturaTotal > 0 ? rawAlturaTotal : 60.2;
-  const numAlturaBase = rawAlturaBase >= 0 ? rawAlturaBase : 0;
+  const numAlturaBase = rawAlturaBase >= 0 ? rawAlturaBase : 0.5;
   const numRoldanaSup = rawRoldanaSup >= 0 ? rawRoldanaSup : numAlturaTotal;
   const numRoldanaInf = rawRoldanaInf >= 0 ? rawRoldanaInf : Math.max(0, numRoldanaSup - 1.2);
   const numAlturaEdificio = rawAlturaEdificio >= 0 ? rawAlturaEdificio : 12.0;
@@ -508,9 +615,6 @@ function dibujarTorreElevacion() {
   }
   if (numAlturaBase > numAlturaTotal) {
     avisos.push("La altura de base/pedestal supera la altura total ingresada.");
-  }
-  if (numRoldanaInf > numRoldanaSup) {
-    avisos.push("La cota de roldana inferior es mayor que la roldana superior.");
   }
   setAviso("avisoTorre", avisos.join(" "));
 
@@ -526,122 +630,269 @@ function dibujarTorreElevacion() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const tieneEdificio = tipoTorre === "ventada_edificio" || tipoTorre === "arriostrada_edificio_normal";
-  const groundY = tieneEdificio ? 760 : 980;
-  const buildingBottomY = 1060;
-
-  const maxDrawH = tieneEdificio ? 540 : 760;
-  const minDrawH = 260;
-  const drawH = Math.max(minDrawH, Math.min(maxDrawH, (numAlturaTotal / 60) * 680));
+  const groundY = tieneEdificio ? 740 : 1040;
+  const buildingBottomY = 1120;
+  const maxDrawH = tieneEdificio ? 540 : 840;
+  const minDrawH = 300;
+  const drawH = Math.max(minDrawH, Math.min(maxDrawH, (numAlturaTotal / 60) * maxDrawH));
   const topY = groundY - drawH;
-  const cx = 420;
+  const cx = 400;
 
   const pxPorMetro = drawH / Math.max(1, numAlturaTotal);
-  const pedH = Math.max(14, Math.min(drawH * 0.4, numAlturaBase * pxPorMetro));
+  const pedH = Math.max(24, Math.min(drawH * 0.25, numAlturaBase * pxPorMetro));
   const towerBaseY = groundY - pedH;
-
-  const supY = Math.max(topY + 12, Math.min(groundY - 12, groundY - numRoldanaSup * pxPorMetro));
-  const infY = Math.max(topY + 24, Math.min(groundY - 8, groundY - numRoldanaInf * pxPorMetro));
 
   ctx.save();
 
+  // Línea de suelo / azotea
   ctx.strokeStyle = "#111827";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(90, groundY);
-  ctx.lineTo(780, groundY);
+  ctx.moveTo(80, groundY);
+  ctx.lineTo(840, groundY);
   ctx.stroke();
 
   if (tieneEdificio) {
-    const bldX = 180;
-    const bldW = 480;
-    ctx.fillStyle = "#f8fafc";
-    ctx.strokeStyle = "#111827";
-    ctx.lineWidth = 3;
-    ctx.fillRect(bldX, groundY, bldW, buildingBottomY - groundY);
-    ctx.strokeRect(bldX, groundY, bldW, buildingBottomY - groundY);
-
-    ctx.beginPath();
-    ctx.moveTo(90, buildingBottomY);
-    ctx.lineTo(780, buildingBottomY);
-    ctx.stroke();
-
-    const bldDimX = 720;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(bldDimX, groundY);
-    ctx.lineTo(bldDimX, buildingBottomY);
-    ctx.stroke();
-
-    setFuenteRelleno(ctx, "#111827", "left", "middle");
-    ctx.fillText("ALTURA EDIFICIO", bldDimX + 12, (groundY + buildingBottomY) / 2 - 12);
-    ctx.fillText(`SIN PARAPETO = ${alturaEdificio} m`, bldDimX + 12, (groundY + buildingBottomY) / 2 + 12);
+    dibujarEdificioBase(ctx, groundY, buildingBottomY, alturaEdificio);
   }
 
+  /* =========================================================
+     MODELO 1: Torre público tipo arbol
+     ========================================================= */
   if (tipoTorre === "arbol") {
+    // Pedestal de concreto
+    const pedW = 140;
     ctx.fillStyle = "#cbd5e1";
     ctx.strokeStyle = "#111827";
     ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - 58, groundY - pedH, 116, pedH);
-    ctx.strokeRect(cx - 58, groundY - pedH, 116, pedH);
+    ctx.fillRect(cx - pedW / 2, groundY - pedH, pedW, pedH);
+    ctx.strokeRect(cx - pedW / 2, groundY - pedH, pedW, pedH);
 
-    ctx.fillStyle = "#854d0e";
+    // Tronco marrón con textura
+    const trunkTopY = topY + drawH * 0.14;
+    ctx.fillStyle = "#78553a";
     ctx.beginPath();
-    ctx.moveTo(cx - 18, towerBaseY);
-    ctx.lineTo(cx - 10, topY + drawH * 0.28);
-    ctx.lineTo(cx + 10, topY + drawH * 0.28);
-    ctx.lineTo(cx + 18, towerBaseY);
+    ctx.moveTo(cx - 22, towerBaseY);
+    ctx.lineTo(cx - 12, trunkTopY);
+    ctx.lineTo(cx + 12, trunkTopY);
+    ctx.lineTo(cx + 22, towerBaseY);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#15803d";
+    // Escalera lateral derecha sobre el tronco
+    const ladX = cx + 18;
+    const ladTop = topY + drawH * 0.42;
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.ellipse(cx, topY + drawH * 0.24, 68, drawH * 0.22, 0, 0, Math.PI * 2);
+    ctx.moveTo(ladX, ladTop);
+    ctx.lineTo(ladX, towerBaseY - 10);
+    ctx.moveTo(ladX + 10, ladTop);
+    ctx.lineTo(ladX + 10, towerBaseY - 10);
+    for (let y = ladTop + 8; y < towerBaseY - 12; y += 12) {
+      ctx.moveTo(ladX, y);
+      ctx.lineTo(ladX + 10, y);
+    }
+    ctx.stroke();
+
+    // Collarín intermedio
+    ctx.fillStyle = "#64748b";
+    ctx.fillRect(cx - 22, topY + drawH * 0.62, 46, 10);
+    ctx.strokeRect(cx - 22, topY + drawH * 0.62, 46, 10);
+
+    // Follaje ovalado verde-grisáceo y antenas sectoriales internas
+    const canopyCY = topY + drawH * 0.23;
+    const canopyRX = 92;
+    const canopyRY = drawH * 0.22;
+    ctx.fillStyle = "rgba(134, 163, 145, 0.45)";
+    ctx.strokeStyle = "#1f2937";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, canopyCY, canopyRX, canopyRY, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-  } else if (tipoTorre === "monopolo") {
-    ctx.fillStyle = "#e2e8f0";
-    ctx.strokeStyle = "#111827";
-    ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - 48, groundY - pedH, 96, pedH);
-    ctx.strokeRect(cx - 48, groundY - pedH, 96, pedH);
 
+    // Ramas / hojas perimetrales
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 10) {
+      const lx = cx + Math.cos(a) * (canopyRX - 8);
+      const ly = canopyCY + Math.sin(a) * (canopyRY - 8);
+      ctx.beginPath();
+      ctx.ellipse(lx, ly, 22, 12, a, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Antenas sectoriales dentro de la copa
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(cx - 42, canopyCY - 45, 22, 75);
+    ctx.strokeRect(cx - 42, canopyCY - 45, 22, 75);
+    ctx.fillRect(cx + 20, canopyCY - 45, 22, 75);
+    ctx.strokeRect(cx + 20, canopyCY - 45, 22, 75);
+
+    // Cotas: izquierda ALTURA TORRE + BASE= (desde tope de copa hasta tope de pedestal)
+    const leftDimX = 215;
+    dibujarFlechaVertical(ctx, leftDimX, topY, towerBaseY, true);
+    setFuenteRelleno(ctx, "#111827", "left", "middle");
+    const midL = (topY + towerBaseY) / 2;
+    ctx.fillText("ALTURA", 65, midL - 22);
+    ctx.fillText("TORRE +", 65, midL);
+    ctx.fillText(`BASE = ${alturaTotal} m`, 65, midL + 22);
+
+    // Derecha inferior ALTURA BASE=
+    const rightDimX = cx + 125;
+    dibujarFlechaVertical(ctx, rightDimX, towerBaseY, groundY, true);
+    setFuenteRelleno(ctx, "#111827", "left", "middle");
+    const midB = (towerBaseY + groundY) / 2;
+    ctx.fillText("ALTURA", rightDimX + 14, midB - 10);
+    ctx.fillText(`BASE = ${alturaBase} m`, rightDimX + 14, midB + 12);
+  }
+
+  /* =========================================================
+     MODELO 2: TORRE MONOPOLO (fuste escalonado + 3 cuerpos de roldanas)
+     ========================================================= */
+  else if (tipoTorre === "monopolo") {
+    const r1Sup = formatNum(document.getElementById("rol1Sup").value, 2);
+    const r1Inf = formatNum(document.getElementById("rol1Inf").value, 2);
+    const r2Sup = formatNum(document.getElementById("rol2Sup").value, 2);
+    const r2Inf = formatNum(document.getElementById("rol2Inf").value, 2);
+    const r3Sup = formatNum(document.getElementById("rol3Sup").value, 2);
+    const r3Inf = formatNum(document.getElementById("rol3Inf").value, 2);
+
+    // Base inferior redondeada
+    const baseW = 135;
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(cx - 18, topY);
-    ctx.lineTo(cx - 38, towerBaseY);
-    ctx.moveTo(cx + 18, topY);
-    ctx.lineTo(cx + 38, towerBaseY);
+    ctx.roundRect(cx - baseW / 2, groundY - pedH, baseW, pedH, 10);
+    ctx.fill();
     ctx.stroke();
 
-    dibujarRoldanaRF(ctx, cx, supY, 18);
-  } else if (tipoTorre === "autosoportada_normal" || tipoTorre === "autosoportada_encima") {
-    const baseHalfW = 110;
-    const topHalfW = 24;
+    // Fuste monopolo cónico
+    ctx.beginPath();
+    ctx.moveTo(cx - 24, topY);
+    ctx.lineTo(cx - 48, towerBaseY);
+    ctx.lineTo(cx + 48, towerBaseY);
+    ctx.lineTo(cx + 24, topY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
 
-    ctx.fillStyle = "#e2e8f0";
-    ctx.strokeStyle = "#111827";
-    ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - baseHalfW - 10, groundY - pedH, 22, pedH);
-    ctx.strokeRect(cx - baseHalfW - 10, groundY - pedH, 22, pedH);
-    ctx.fillRect(cx + baseHalfW - 12, groundY - pedH, 22, pedH);
-    ctx.strokeRect(cx + baseHalfW - 12, groundY - pedH, 22, pedH);
+    // 3 cuerpos/plataformas rectangulares de roldanas (1, 2, 3)
+    const bloques = [
+      { y1: topY + drawH * 0.06, h: 48, w: 86, sup: r1Sup, inf: r1Inf, n: 1 },
+      { y1: topY + drawH * 0.17, h: 52, w: 102, sup: r2Sup, inf: r2Inf, n: 2 },
+      { y1: topY + drawH * 0.29, h: 56, w: 118, sup: r3Sup, inf: r3Inf, n: 3 }
+    ];
 
+    bloques.forEach((b) => {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(cx - b.w / 2, b.y1, b.w, b.h);
+      ctx.strokeRect(cx - b.w / 2, b.y1, b.w, b.h);
+
+      // Líneas horizontales de cota a la derecha
+      ctx.beginPath();
+      ctx.moveTo(cx + b.w / 2, b.y1);
+      ctx.lineTo(cx + 105, b.y1);
+      ctx.moveTo(cx + b.w / 2, b.y1 + b.h);
+      ctx.lineTo(cx + 105, b.y1 + b.h);
+      ctx.stroke();
+
+      setFuenteRelleno(ctx, "#111827", "left", "middle");
+      ctx.fillText(`ALTURA ROLDANA ${b.n} SUPERIOR = ${b.sup} m`, cx + 112, b.y1 + 6);
+      ctx.fillText(`ALTURA ROLDANA ${b.n} INFERIOR = ${b.inf} m`, cx + 112, b.y1 + b.h - 4);
+    });
+
+    // Llave izquierda ALTURA TORRE + BASE=
+    const brX = 230;
+    ctx.beginPath();
+    ctx.moveTo(brX + 16, topY);
+    ctx.lineTo(brX, topY);
+    ctx.lineTo(brX, (topY + groundY) / 2 - 8);
+    ctx.lineTo(brX - 16, (topY + groundY) / 2);
+    ctx.lineTo(brX, (topY + groundY) / 2 + 8);
+    ctx.lineTo(brX, groundY);
+    ctx.lineTo(brX + 16, groundY);
+    ctx.stroke();
+
+    setFuenteRelleno(ctx, "#111827", "left", "middle");
+    const midM = (topY + groundY) / 2;
+    ctx.fillText("ALTURA", 45, midM - 22);
+    ctx.fillText("TORRE +", 45, midM);
+    ctx.fillText(`BASE = ${alturaTotal} m`, 45, midM + 22);
+
+    // Llave derecha inferior ALTURA BASE=
+    const rBrX = cx + baseW / 2 + 12;
+    ctx.beginPath();
+    ctx.moveTo(rBrX, towerBaseY);
+    ctx.lineTo(rBrX + 12, towerBaseY);
+    ctx.lineTo(rBrX + 12, (towerBaseY + groundY) / 2 - 5);
+    ctx.lineTo(rBrX + 22, (towerBaseY + groundY) / 2);
+    ctx.lineTo(rBrX + 12, (towerBaseY + groundY) / 2 + 5);
+    ctx.lineTo(rBrX + 12, groundY);
+    ctx.lineTo(rBrX, groundY);
+    ctx.stroke();
+
+    const midBase = (towerBaseY + groundY) / 2;
+    ctx.fillText("ALTURA", rBrX + 30, midBase - 10);
+    ctx.fillText(`BASE = ${alturaBase} m`, rBrX + 30, midBase + 12);
+  }
+
+  /* =========================================================
+     MODELOS 3 y 7: Torre autosoportada (roldana normal / roldana encima)
+     ========================================================= */
+  else if (tipoTorre === "autosoportada_normal" || tipoTorre === "autosoportada_encima") {
+    const baseHalfW = 105;
+    const topHalfW = 48;
+    const waistY = topY + (towerBaseY - topY) * 0.55;
+    const waistHalfW = 54;
+
+    // Pedestales izquierdo y derecho
+    ctx.fillStyle = "#ffffff";
     ctx.strokeStyle = "#111827";
     ctx.lineWidth = 3;
+    ctx.fillRect(cx - baseHalfW - 12, groundY - pedH, 24, pedH);
+    ctx.strokeRect(cx - baseHalfW - 12, groundY - pedH, 24, pedH);
+    ctx.fillRect(cx + baseHalfW - 12, groundY - pedH, 24, pedH);
+    ctx.strokeRect(cx + baseHalfW - 12, groundY - pedH, 24, pedH);
+
+    // Montantes principales con quiebre en cintura
+    ctx.lineWidth = 2.2;
     ctx.beginPath();
     ctx.moveTo(cx - topHalfW, topY);
+    ctx.lineTo(cx - waistHalfW, waistY);
     ctx.lineTo(cx - baseHalfW, towerBaseY);
     ctx.moveTo(cx + topHalfW, topY);
+    ctx.lineTo(cx + waistHalfW, waistY);
     ctx.lineTo(cx + baseHalfW, towerBaseY);
     ctx.stroke();
 
-    const niveles = 12;
-    ctx.lineWidth = 1.5;
-    for (let i = 0; i < niveles; i++) {
-      const y1 = topY + (towerBaseY - topY) * (i / niveles);
-      const y2 = topY + (towerBaseY - topY) * ((i + 1) / niveles);
-      const hw1 = topHalfW + (baseHalfW - topHalfW) * (i / niveles);
-      const hw2 = topHalfW + (baseHalfW - topHalfW) * ((i + 1) / niveles);
+    // Escalera central
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(cx - 10, topY);
+    ctx.lineTo(cx - 10, towerBaseY);
+    ctx.moveTo(cx + 10, topY);
+    ctx.lineTo(cx + 10, towerBaseY);
+    for (let y = topY + 12; y < towerBaseY; y += 16) {
+      ctx.moveTo(cx - 10, y);
+      ctx.lineTo(cx + 10, y);
+    }
+    ctx.stroke();
+
+    // Celosía en X
+    const tramos = 12;
+    for (let i = 0; i < tramos; i++) {
+      const f1 = i / tramos;
+      const f2 = (i + 1) / tramos;
+      const y1 = topY + (towerBaseY - topY) * f1;
+      const y2 = topY + (towerBaseY - topY) * f2;
+      const hw1 = f1 < 0.55
+        ? topHalfW + (waistHalfW - topHalfW) * (f1 / 0.55)
+        : waistHalfW + (baseHalfW - waistHalfW) * ((f1 - 0.55) / 0.45);
+      const hw2 = f2 < 0.55
+        ? topHalfW + (waistHalfW - topHalfW) * (f2 / 0.55)
+        : waistHalfW + (baseHalfW - waistHalfW) * ((f2 - 0.55) / 0.45);
+
       ctx.beginPath();
       ctx.moveTo(cx - hw1, y1);
       ctx.lineTo(cx + hw1, y1);
@@ -652,108 +903,219 @@ function dibujarTorreElevacion() {
       ctx.stroke();
     }
 
-    const roldanaPosY = tipoTorre === "autosoportada_encima" ? Math.max(40, topY - 26) : supY;
-    dibujarRoldanaRF(ctx, cx, roldanaPosY, 18);
-  } else if (tipoTorre === "arriostrada_escalera_gato" || tipoTorre === "arriostrada_edificio_normal") {
+    // Canastilla superior y antenas sectoriales laterales
+    const platTopY = topY + 34;
+    const platBotY = topY + 72;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(cx - 82, platTopY, 164, platBotY - platTopY);
+    // Antenas laterales
+    ctx.strokeRect(cx - 98, platTopY - 22, 12, 62);
+    ctx.strokeRect(cx + 86, platTopY - 22, 12, 62);
+
+    // Mástil pararrayos superior
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, topY);
+    ctx.lineTo(cx, Math.max(36, topY - 82));
+    ctx.stroke();
+
+    // Cotas según modelo 3 (roldana normal) o 7 (roldana encima)
+    const supLineY = tipoTorre === "autosoportada_encima" ? platTopY - 12 : platTopY;
+    const infLineY = platBotY;
+
+    // Flecha izquierda: ALTURA ROLDANA SUPERIOR =
+    const leftArrowX = 235;
+    dibujarFlechaVertical(ctx, leftArrowX, supLineY, groundY, true);
+    setFuenteRelleno(ctx, "#111827", "left", "middle");
+    const midSup = (supLineY + groundY) / 2;
+    ctx.fillText("ALTURA", 40, midSup - 22);
+    ctx.fillText("ROLDANA", 40, midSup);
+    ctx.fillText(`SUPERIOR = ${roldanaSup} m`, 40, midSup + 22);
+
+    // Flecha derecha 1: ALTURA ROLDANA INFERIOR =
+    const rightArrow1X = 560;
+    dibujarFlechaVertical(ctx, rightArrow1X, infLineY, groundY, true);
+    const midInf = (infLineY + groundY) / 2 + 25;
+    ctx.fillText("ALTURA", rightArrow1X + 10, midInf - 22);
+    ctx.fillText("ROLDANA", rightArrow1X + 10, midInf);
+    ctx.fillText(`INFERIOR = ${roldanaInf} m`, rightArrow1X + 10, midInf + 22);
+
+    // Flecha derecha 2: ALTURA TORRE + BASE =
+    const rightArrow2X = 720;
+    dibujarFlechaVertical(ctx, rightArrow2X, topY, groundY, true);
+    const midTot = (topY + groundY) / 2 - 40;
+    ctx.fillText("ALTURA", rightArrow2X + 12, midTot - 22);
+    ctx.fillText("TORRE +", rightArrow2X + 12, midTot);
+    ctx.fillText(`BASE = ${alturaTotal} m`, rightArrow2X + 12, midTot + 22);
+
+    // Texto central inferior: Altura Base =
+    setFuenteRelleno(ctx, "#111827", "center", "middle");
+    ctx.fillText(`ALTURA BASE = ${alturaBase} m`, cx, groundY - pedH / 2);
+  }
+
+  /* =========================================================
+     MODELOS 4 y 8: Torre arriostrada (con escalera gato / con edificio normal)
+     ========================================================= */
+  else if (tipoTorre === "arriostrada_escalera_gato" || tipoTorre === "arriostrada_edificio_normal") {
+    const hasEscalera = tipoTorre === "arriostrada_escalera_gato";
+    const egH = hasEscalera ? Math.max(54, Math.min(115, numAlturaEscalera * 22)) : 0;
+    const baseStructTopY = groundY - egH;
+
+    if (hasEscalera) {
+      // Caseta / escalera gato sobre azotea
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 2;
+      ctx.fillRect(cx - 80, baseStructTopY, 180, egH);
+      ctx.strokeRect(cx - 80, baseStructTopY, 180, egH);
+
+      // Escalera de gato vertical a la izquierda
+      ctx.strokeStyle = "#111827";
+      ctx.beginPath();
+      ctx.moveTo(cx - 64, baseStructTopY + 6);
+      ctx.lineTo(cx - 64, groundY - 6);
+      ctx.moveTo(cx - 52, baseStructTopY + 6);
+      ctx.lineTo(cx - 52, groundY - 6);
+      for (let y = baseStructTopY + 12; y < groundY - 8; y += 12) {
+        ctx.moveTo(cx - 64, y);
+        ctx.lineTo(cx - 52, y);
+      }
+      ctx.stroke();
+
+      // Cota ALTURA ESCALERA GATO =
+      const egDimX = 560;
+      dibujarFlechaVertical(ctx, egDimX, baseStructTopY, groundY, true);
+      setFuenteRelleno(ctx, "#111827", "left", "middle");
+      const midEg = (baseStructTopY + groundY) / 2;
+      ctx.fillText("ALTURA", egDimX + 12, midEg - 20);
+      ctx.fillText("ESCALERA", egDimX + 12, midEg);
+      ctx.fillText(`GATO = ${alturaEscalera} m`, egDimX + 12, midEg + 20);
+    }
+
+    const mastTopY = topY;
+    const mastPedTopY = baseStructTopY - pedH;
+
+    // Pedestal izquierdo y punto de anclaje derecho de riostra
     ctx.fillStyle = "#cbd5e1";
     ctx.strokeStyle = "#111827";
     ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - 32, groundY - pedH, 64, pedH);
-    ctx.strokeRect(cx - 32, groundY - pedH, 64, pedH);
+    ctx.fillRect(cx - 58, mastPedTopY, 44, pedH);
+    ctx.strokeRect(cx - 58, mastPedTopY, 44, pedH);
 
-    ctx.lineWidth = 3.5;
+    ctx.fillRect(cx + 85, baseStructTopY - 22, 32, 22);
+    ctx.strokeRect(cx + 85, baseStructTopY - 22, 32, 22);
+
+    // Mástil monopolo arriostrado con soportes de antenas
+    const mastX = cx - 36;
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(cx, topY);
-    ctx.lineTo(cx, towerBaseY);
+    ctx.moveTo(mastX, mastTopY);
+    ctx.lineTo(mastX, mastPedTopY);
     ctx.stroke();
 
-    ctx.strokeStyle = "#0284c7";
+    // Soportes de antenas superiores
     ctx.lineWidth = 2.5;
+    ctx.strokeRect(mastX - 46, mastTopY + 25, 92, 85);
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(cx, topY + (towerBaseY - topY) * 0.35);
-    ctx.lineTo(cx + 125, towerBaseY);
+    ctx.moveTo(mastX - 46, mastTopY + 12);
+    ctx.lineTo(mastX - 46, mastTopY + 125);
+    ctx.moveTo(mastX + 46, mastTopY + 12);
+    ctx.lineTo(mastX + 46, mastTopY + 125);
     ctx.stroke();
 
-    if (tipoTorre === "arriostrada_escalera_gato") {
-      const egH = Math.max(24, Math.min(120, numAlturaEscalera * pxPorMetro * 3));
-      ctx.strokeStyle = "#111827";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(cx - 26, towerBaseY - egH, 16, egH);
-      setFuenteRelleno(ctx, "#111827", "left", "middle");
-      ctx.fillText(`ALTURA ESCALERA GATO = ${alturaEscalera} m`, cx + 140, towerBaseY - egH / 2);
-    }
-  } else if (tipoTorre === "ventada_edificio" || tipoTorre === "ventada_piso") {
-    const bHalfW = 48;
-    const tHalfW = 14;
-
-    ctx.fillStyle = "#e2e8f0";
-    ctx.strokeStyle = "#111827";
-    ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - bHalfW - 6, groundY - pedH, bHalfW * 2 + 12, pedH);
-    ctx.strokeRect(cx - bHalfW - 6, groundY - pedH, bHalfW * 2 + 12, pedH);
-
-    ctx.lineWidth = 2.8;
+    // Brazo diagonal rígido (riostra)
+    ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.moveTo(cx - tHalfW, topY);
-    ctx.lineTo(cx - bHalfW, towerBaseY);
-    ctx.moveTo(cx + tHalfW, topY);
-    ctx.lineTo(cx + bHalfW, towerBaseY);
+    ctx.moveTo(mastX, mastTopY + (mastPedTopY - mastTopY) * 0.36);
+    ctx.lineTo(cx + 100, baseStructTopY - 22);
     ctx.stroke();
 
-    const spanX = tipoTorre === "ventada_piso" ? 210 : 155;
-    ctx.strokeStyle = "#0284c7";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx - tHalfW, topY + (towerBaseY - topY) * 0.25);
-    ctx.lineTo(cx - spanX, groundY);
-    ctx.moveTo(cx + tHalfW, topY + (towerBaseY - topY) * 0.25);
-    ctx.lineTo(cx + spanX, groundY);
-    ctx.stroke();
+    // Cota izquierda: Altura Base =
+    setFuenteRelleno(ctx, "#111827", "right", "middle");
+    ctx.fillText("ALTURA", mastX - 38, mastPedTopY + pedH / 2 - 10);
+    ctx.fillText(`BASE = ${alturaBase} m`, mastX - 38, mastPedTopY + pedH / 2 + 12);
 
-    if (tipoTorre === "ventada_piso") {
-      ctx.fillStyle = "#fef3c7";
-      ctx.strokeStyle = "#111827";
-      ctx.fillRect(cx - spanX - 18, groundY - 16, 36, 16);
-      ctx.strokeRect(cx - spanX - 18, groundY - 16, 36, 16);
-      ctx.fillRect(cx + spanX - 18, groundY - 16, 36, 16);
-      ctx.strokeRect(cx + spanX - 18, groundY - 16, 36, 16);
-    }
+    // Cota derecha: Altura Torre + base =
+    const dimX = 560;
+    dibujarFlechaVertical(ctx, dimX, mastTopY, baseStructTopY, true);
+    setFuenteRelleno(ctx, "#111827", "left", "middle");
+    const midT = (mastTopY + baseStructTopY) / 2;
+    ctx.fillText("ALTURA", dimX + 12, midT - 22);
+    ctx.fillText("TORRE +", dimX + 12, midT);
+    ctx.fillText(`BASE = ${alturaTotal} m`, dimX + 12, midT + 22);
   }
 
-  ctx.strokeStyle = "#0284c7";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([4, 3]);
-  ctx.beginPath();
-  ctx.moveTo(140, supY);
-  ctx.lineTo(cx - 24, supY);
-  ctx.moveTo(cx + 28, infY);
-  ctx.lineTo(560, infY);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  /* =========================================================
+     MODELOS 5 y 6: Torre ventada (con edificio / de piso)
+     ========================================================= */
+  else if (tipoTorre === "ventada_edificio" || tipoTorre === "ventada_piso") {
+    const isDePiso = tipoTorre === "ventada_piso";
+    const mastW = 18;
+    const mastTopY = topY;
 
-  setFuenteRelleno(ctx, "#111827", "left", "middle");
-  ctx.fillText(`ALTURA ROLDANA SUPERIOR = ${roldanaSup} m`, 110, supY - 18);
-  ctx.fillText(`ALTURA ROLDANA INFERIOR = ${roldanaInf} m`, 565, infY - 18);
+    // Pedestal central
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 2.5;
+    ctx.fillRect(cx - 22, groundY - pedH, 44, pedH);
+    ctx.strokeRect(cx - 22, groundY - pedH, 44, pedH);
 
-  const dimX = 720;
-  ctx.strokeStyle = "#111827";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(cx + 25, topY);
-  ctx.lineTo(dimX, topY);
-  ctx.moveTo(cx + 120, groundY);
-  ctx.lineTo(dimX, groundY);
-  ctx.moveTo(dimX - 10, topY);
-  ctx.lineTo(dimX - 10, groundY);
-  ctx.stroke();
+    // Mástil reticulado vertical uniforme
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx - mastW / 2, mastTopY, mastW, towerBaseY - mastTopY);
+    for (let y = mastTopY + 12; y < towerBaseY; y += 14) {
+      ctx.beginPath();
+      ctx.moveTo(cx - mastW / 2, y);
+      ctx.lineTo(cx + mastW / 2, y + 14);
+      ctx.stroke();
+    }
 
-  const midDimY = (topY + groundY) / 2;
-  setFuenteRelleno(ctx, "#111827", "left", "middle");
-  ctx.fillText("ALTURA TORRE + BASE =", dimX + 8, midDimY - 12);
-  ctx.fillText(`${alturaTotal} m`, dimX + 8, midDimY + 12);
+    // Antenas superiores
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(cx - 48, mastTopY + 22, 96, 68);
 
-  setFuenteRelleno(ctx, "#111827", "center", "top");
-  ctx.fillText(`ALTURA BASE = ${alturaBase} m`, cx, groundY + 12);
+    // Cámaras de anclaje y vientos (2 niveles de vientos)
+    const ancSpan = isDePiso ? 260 : 195;
+    const ancLeftX = cx - ancSpan;
+    const ancRightX = cx + ancSpan;
+
+    [ancLeftX, ancRightX].forEach((ax) => {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(ax - 16, groundY - 16, 32, 16);
+      ctx.strokeRect(ax - 16, groundY - 16, 32, 16);
+    });
+
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 1.6;
+    [0.24, 0.56].forEach((frac) => {
+      const tieY = mastTopY + (towerBaseY - mastTopY) * frac;
+      ctx.beginPath();
+      ctx.moveTo(cx - mastW / 2, tieY);
+      ctx.lineTo(ancLeftX, groundY - 16);
+      ctx.moveTo(cx + mastW / 2, tieY);
+      ctx.lineTo(ancRightX, groundY - 16);
+      ctx.stroke();
+    });
+
+    if (isDePiso) {
+      setFuenteRelleno(ctx, "#111827", "center", "top");
+      ctx.fillText("CAMARA DE ANCLAJE", ancLeftX, groundY + 12);
+      ctx.fillText("CAMARA DE ANCLAJE", ancRightX, groundY + 12);
+    }
+
+    // Etiqueta Altura base =
+    setFuenteRelleno(ctx, "#111827", "left", "middle");
+    ctx.fillText(`ALTURA BASE = ${alturaBase} m`, cx + 32, groundY - pedH / 2);
+
+    // Cota derecha: ALTURA TORRE + BASE = / PEDESTAL =
+    const dimX = isDePiso ? 740 : 660;
+    dibujarFlechaVertical(ctx, dimX, mastTopY, groundY, true);
+    const midT = (mastTopY + groundY) / 2;
+    ctx.fillText("ALTURA", dimX + 12, midT - 22);
+    ctx.fillText("TORRE +", dimX + 12, midT);
+    ctx.fillText(`${isDePiso ? "PEDESTAL" : "BASE"} = ${alturaTotal} m`, dimX + 12, midT + 22);
+  }
 
   ctx.restore();
 }
@@ -776,6 +1138,7 @@ const allInputs = [
   "spatTipoTorre", "cantidadPozos", "val50", "val60", "val70",
   "perAncho", "perLargo", "perTipoTorre", "coordA", "coordB", "coordC", "coordD",
   "torreTipo", "alturaTorre", "alturaBase", "roldanaSup", "roldanaInf",
+  "rol1Sup", "rol1Inf", "rol2Sup", "rol2Inf", "rol3Sup", "rol3Inf",
   "alturaEdificio", "alturaEscaleraGato"
 ];
 
