@@ -1,6 +1,6 @@
 {
-  "name": "Generador Esquema SPAT - F12M",
-  "short_name": "Esquema SPAT",
+  "name": "Generador Esquemas Técnicos",
+  "short_name": "Esquemas Site",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f2f4f8",

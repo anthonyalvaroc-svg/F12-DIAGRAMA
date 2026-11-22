@@ -5,13 +5,13 @@
 
 body {
   margin: 0;
-  padding: 16px;
+  padding: 14px;
   background: #f2f4f8;
   color: #1f2937;
 }
 
 .container {
-  max-width: 940px;
+  max-width: 980px;
   margin: 0 auto;
   background: #ffffff;
   border-radius: 12px;
@@ -20,15 +20,61 @@ body {
 }
 
 .app-header h1 {
-  margin: 0 0 6px;
-  font-size: 20px;
+  margin: 0 0 4px;
+  font-size: 21px;
   color: #111827;
 }
 
 p.sub {
-  margin: 0 0 18px;
+  margin: 0 0 16px;
   font-size: 13px;
   color: #4b5563;
+}
+
+.shared-site-bar {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.shared-field {
+  max-width: 360px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+}
+
+.tab-btn {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
 }
 
 .grid-form {
@@ -77,11 +123,6 @@ button {
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  transition: opacity 0.15s ease;
-}
-
-button:active {
-  opacity: 0.85;
 }
 
 .btn-primary {
@@ -100,7 +141,7 @@ button:active {
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   background: #ffffff;
-  padding: 8px;
+  padding: 10px;
   text-align: center;
 }
 

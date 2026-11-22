@@ -4,71 +4,183 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#111827" />
-  <meta name="description" content="Generador automático de esquema de medición SPAT para formato F12M" />
-  <title>Generador Esquema SPAT - F12M</title>
+  <meta name="description" content="Generador de esquemas SPAT (F12M), perímetro con coordenadas y elevación de torre" />
+  <title>Generador Esquemas — SPAT / Perímetro / Torre</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
     <header class="app-header">
-      <h1>Generador Automático — Esquema SPAT (F12M)</h1>
-      <p class="sub">Completa los datos y descarga la imagen lista para subir en 5.- ESQUEMA DE MEDICION.</p>
+      <h1>Generador de Esquemas Técnicos</h1>
+      <p class="sub">Un solo nombre de Site compartido y descarga independiente de cada diagrama en PNG.</p>
     </header>
 
-    <div class="grid-form">
-      <div class="field">
-        <label for="sitio">Nombre del Site</label>
+    <!-- Nombre de Site compartido para todos los diagramas -->
+    <div class="shared-site-bar">
+      <div class="field shared-field">
+        <label for="sitio">Nombre del Site (Compartido)</label>
         <input type="text" id="sitio" value="CANCAS" placeholder="Ej. CANCAS" />
       </div>
-
-      <div class="field">
-        <label for="tipoTorre">Tipo de Torre</label>
-        <select id="tipoTorre">
-          <option value="auto_cuadrado" selected>1. Cuadrado grande = Autosoportada</option>
-          <option value="auto_triangulo">2. Triángulo = Autosoportada</option>
-          <option value="monopolo">3. Círculo = Monopolo</option>
-          <option value="ventada">4. Cuadrado pequeño = Ventada</option>
-          <option value="arriostrada">5. Círculo pequeño = Arriostrada</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="cantidadPozos">Cantidad de Pozos</label>
-        <select id="cantidadPozos">
-          <option value="1">1 Pozo (PT01)</option>
-          <option value="2">2 Pozos (PT01 - PT02)</option>
-          <option value="3" selected>3 Pozos (PT01 - PT03)</option>
-          <option value="4">4 Pozos (PT01 - PT04)</option>
-          <option value="5">5 Pozos (PT01 - PT05)</option>
-          <option value="6">6 Pozos (PT01 - PT06)</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="val50">50% - 15MTS (Ω)</label>
-        <input type="number" step="0.01" id="val50" value="15.10" />
-      </div>
-
-      <div class="field">
-        <label for="val60">60% - 18MTS (Ω)</label>
-        <input type="number" step="0.01" id="val60" value="16.33" />
-      </div>
-
-      <div class="field">
-        <label for="val70">70% - 21MTS (Ω)</label>
-        <input type="number" step="0.01" id="val70" value="17.49" />
-      </div>
     </div>
 
-    <div class="actions">
-      <button class="btn-secondary" id="btnActualizar" type="button">Actualizar Vista</button>
-      <button class="btn-primary" id="btnDescargar" type="button">Descargar PNG</button>
-    </div>
+    <!-- Navegación de pestañas -->
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="tab-spat" type="button">F12M - SPAT</button>
+      <button class="tab-btn" data-tab="tab-perimetro" type="button">Diagrama 1: Perímetro y Coordenadas</button>
+      <button class="tab-btn" data-tab="tab-torre" type="button">Diagrama 2: Elevación de Torre</button>
+    </nav>
 
-    <div class="canvas-wrap">
-      <canvas id="esquemaCanvas" width="960" height="1060"></canvas>
-    </div>
+    <!-- PESTAÑA 0: F12M - SPAT -->
+    <section id="tab-spat" class="tab-panel active">
+      <div class="grid-form">
+        <div class="field">
+          <label for="spatTipoTorre">Tipo de Torre</label>
+          <select id="spatTipoTorre">
+            <option value="auto_cuadrado" selected>1. Cuadrado grande = Autosoportada</option>
+            <option value="auto_triangulo">2. Triángulo = Autosoportada</option>
+            <option value="monopolo">3. Círculo = Monopolo</option>
+            <option value="ventada">4. Cuadrado pequeño = Ventada</option>
+            <option value="arriostrada">5. Círculo pequeño = Arriostrada</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="cantidadPozos">Cantidad de Pozos</label>
+          <select id="cantidadPozos">
+            <option value="1">1 Pozo (PT01)</option>
+            <option value="2">2 Pozos (PT01 - PT02)</option>
+            <option value="3" selected>3 Pozos (PT01 - PT03)</option>
+            <option value="4">4 Pozos (PT01 - PT04)</option>
+            <option value="5">5 Pozos (PT01 - PT05)</option>
+            <option value="6">6 Pozos (PT01 - PT06)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="val50">50% - 15MTS (Ω)</label>
+          <input type="number" step="0.01" id="val50" value="15.10" />
+        </div>
+
+        <div class="field">
+          <label for="val60">60% - 18MTS (Ω)</label>
+          <input type="number" step="0.01" id="val60" value="16.33" />
+        </div>
+
+        <div class="field">
+          <label for="val70">70% - 21MTS (Ω)</label>
+          <input type="number" step="0.01" id="val70" value="17.49" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" id="btnActualizarSpat" type="button">Actualizar Vista</button>
+        <button class="btn-primary" id="btnDescargarSpat" type="button">Descargar PNG SPAT</button>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="canvasSpat" width="960" height="1060"></canvas>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 1: DIAGRAMA 1 - PERÍMETRO Y COORDENADAS -->
+    <section id="tab-perimetro" class="tab-panel">
+      <div class="grid-form">
+        <div class="field">
+          <label for="perAncho">Ancho / Frente (MTS)</label>
+          <input type="number" step="0.01" id="perAncho" value="8.10" />
+        </div>
+
+        <div class="field">
+          <label for="perLargo">Largo / Fondo (MTS)</label>
+          <input type="number" step="0.01" id="perLargo" value="10.00" />
+        </div>
+
+        <div class="field">
+          <label for="perTipoTorre">Tipo de Torre</label>
+          <select id="perTipoTorre">
+            <option value="auto_cuadrado" selected>1. Cuadrado grande = Autosoportada</option>
+            <option value="auto_triangulo">2. Triángulo = Autosoportada</option>
+            <option value="monopolo">3. Círculo = Monopolo</option>
+            <option value="ventada">4. Cuadrado pequeño = Ventada</option>
+            <option value="arriostrada">5. Círculo pequeño = Arriostrada</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="coordA">Coordenada Esquina A</label>
+          <input type="text" id="coordA" value="S:3°57'21.4&quot; W:80°57'2.2&quot;" />
+        </div>
+
+        <div class="field">
+          <label for="coordB">Coordenada Esquina B</label>
+          <input type="text" id="coordB" value="S:3°57'21.3&quot; W:80°57'2.2&quot;" />
+        </div>
+
+        <div class="field">
+          <label for="coordC">Coordenada Esquina C</label>
+          <input type="text" id="coordC" value="S:3°57'21.1&quot; W:80°57'2.2&quot;" />
+        </div>
+
+        <div class="field">
+          <label for="coordD">Coordenada Esquina D</label>
+          <input type="text" id="coordD" value="S:3°57'21.2&quot; W:80°57'2.1&quot;" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" id="btnActualizarPer" type="button">Actualizar Vista</button>
+        <button class="btn-primary" id="btnDescargarPer" type="button">Descargar PNG Diagrama 1</button>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="canvasPerimetro" width="960" height="920"></canvas>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 2: DIAGRAMA 2 - ELEVACIÓN DE TORRE -->
+    <section id="tab-torre" class="tab-panel">
+      <div class="grid-form">
+        <div class="field">
+          <label for="torreTipo">Tipo de Torre</label>
+          <select id="torreTipo">
+            <option value="autosoportada" selected>Autosoportada (Celosía)</option>
+            <option value="monopolo">Monopolo</option>
+            <option value="ventada">Ventada</option>
+            <option value="arriostrada">Arriostrada</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="alturaTorre">Altura Torre + Base (m)</label>
+          <input type="number" step="0.01" id="alturaTorre" value="60.20" />
+        </div>
+
+        <div class="field">
+          <label for="alturaBase">Altura Base / Pedestal (m)</label>
+          <input type="number" step="0.01" id="alturaBase" value="0.50" />
+        </div>
+
+        <div class="field">
+          <label for="roldanaSup">Roldana Superior (m)</label>
+          <input type="number" step="0.01" id="roldanaSup" value="60.10" />
+        </div>
+
+        <div class="field">
+          <label for="roldanaInf">Roldana Inferior (m)</label>
+          <input type="number" step="0.01" id="roldanaInf" value="58.90" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" id="btnActualizarTorre" type="button">Actualizar Vista</button>
+        <button class="btn-primary" id="btnDescargarTorre" type="button">Descargar PNG Diagrama 2</button>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="canvasTorre" width="920" height="1060"></canvas>
+      </div>
+    </section>
   </div>
 
   <script src="app.js"></script>

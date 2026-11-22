@@ -1,4 +1,4 @@
-const CACHE_NAME = "esquema-spat-v1";
+const CACHE_NAME = "esquemas-site-v2";
 const ASSETS = [
   "./",
   "./index.html",
