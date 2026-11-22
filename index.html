@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#111827" />
   <meta name="description" content="Generador de esquemas SPAT (F12M), perímetro con coordenadas y elevación de torre" />
   <title>Generador Esquemas — SPAT / Perímetro / Torre</title>
-  <link rel="manifest" href="manifest.json?v=4" />
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="manifest" href="manifest.json?v=6" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <div class="container">
@@ -20,19 +20,19 @@
     <div class="shared-site-bar">
       <div class="field shared-field">
         <label for="sitio">Nombre del Site (Compartido)</label>
-        <input type="text" id="sitio" value="CANCAS" placeholder="Ej. CANCAS" />
+        <input type="text" id="sitio" value="CANCAS" placeholder="Ej. CANCAS" maxlength="40" />
       </div>
     </div>
 
     <!-- Navegación de pestañas -->
-    <nav class="tabs" role="tablist">
-      <button class="tab-btn active" data-tab="tab-spat" type="button" onclick="activarTab('tab-spat', this)">1. F12M - SPAT</button>
-      <button class="tab-btn" data-tab="tab-perimetro" type="button" onclick="activarTab('tab-perimetro', this)">2. Diagrama 1: Perímetro</button>
-      <button class="tab-btn" data-tab="tab-torre" type="button" onclick="activarTab('tab-torre', this)">3. Diagrama 2: Torre</button>
+    <nav class="tabs" role="tablist" aria-label="Diagramas técnicos">
+      <button class="tab-btn active" id="btn-tab-spat" data-tab="tab-spat" type="button" role="tab" aria-selected="true" aria-controls="tab-spat">1. F12M - SPAT</button>
+      <button class="tab-btn" id="btn-tab-perimetro" data-tab="tab-perimetro" type="button" role="tab" aria-selected="false" aria-controls="tab-perimetro">2. Esquema 1: Perímetro</button>
+      <button class="tab-btn" id="btn-tab-torre" data-tab="tab-torre" type="button" role="tab" aria-selected="false" aria-controls="tab-torre">3. Esquema 2: Torre</button>
     </nav>
 
     <!-- PESTAÑA 1: F12M - SPAT -->
-    <section id="tab-spat" class="tab-panel active">
+    <section id="tab-spat" class="tab-panel active" role="tabpanel" aria-labelledby="btn-tab-spat">
       <div class="grid-form">
         <div class="field">
           <label for="spatTipoTorre">Tipo de Torre</label>
@@ -59,23 +59,25 @@
 
         <div class="field">
           <label for="val50">50% - 15MTS (Ω)</label>
-          <input type="number" step="0.01" id="val50" value="15.10" />
+          <input type="number" step="0.01" min="0" id="val50" value="15.10" />
         </div>
 
         <div class="field">
           <label for="val60">60% - 18MTS (Ω)</label>
-          <input type="number" step="0.01" id="val60" value="16.33" />
+          <input type="number" step="0.01" min="0" id="val60" value="16.33" />
         </div>
 
         <div class="field">
           <label for="val70">70% - 21MTS (Ω)</label>
-          <input type="number" step="0.01" id="val70" value="17.49" />
+          <input type="number" step="0.01" min="0" id="val70" value="17.49" />
         </div>
       </div>
 
+      <div id="avisoSpat" class="notice" hidden></div>
+
       <div class="actions">
-        <button class="btn-secondary" id="btnActualizarSpat" type="button">Actualizar Vista</button>
-        <button class="btn-primary" id="btnDescargarSpat" type="button">Descargar PNG SPAT</button>
+        <button class="btn-action btn-secondary" id="btnActualizarSpat" type="button">Actualizar Vista</button>
+        <button class="btn-action btn-primary" id="btnDescargarSpat" type="button">Descargar PNG SPAT</button>
       </div>
 
       <div class="canvas-wrap">
@@ -83,17 +85,17 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 2: DIAGRAMA 1 - PERÍMETRO Y COORDENADAS -->
-    <section id="tab-perimetro" class="tab-panel">
+    <!-- PESTAÑA 2: ESQUEMA 1 - PERÍMETRO Y COORDENADAS -->
+    <section id="tab-perimetro" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-perimetro">
       <div class="grid-form">
         <div class="field">
           <label for="perAncho">Ancho / Frente (MTS)</label>
-          <input type="number" step="0.01" id="perAncho" value="8.10" />
+          <input type="number" step="0.01" min="0.5" id="perAncho" value="8.10" />
         </div>
 
         <div class="field">
           <label for="perLargo">Largo / Fondo (MTS)</label>
-          <input type="number" step="0.01" id="perLargo" value="10.00" />
+          <input type="number" step="0.01" min="0.5" id="perLargo" value="10.00" />
         </div>
 
         <div class="field">
@@ -128,9 +130,11 @@
         </div>
       </div>
 
+      <div id="avisoPerimetro" class="notice" hidden></div>
+
       <div class="actions">
-        <button class="btn-secondary" id="btnActualizarPer" type="button">Actualizar Vista</button>
-        <button class="btn-primary" id="btnDescargarPer" type="button">Descargar PNG Diagrama 1</button>
+        <button class="btn-action btn-secondary" id="btnActualizarPer" type="button">Actualizar Vista</button>
+        <button class="btn-action btn-primary" id="btnDescargarPer" type="button">Descargar PNG Esquema 1</button>
       </div>
 
       <div class="canvas-wrap">
@@ -138,51 +142,67 @@
       </div>
     </section>
 
-    <!-- PESTAÑA 3: DIAGRAMA 2 - ELEVACIÓN DE TORRE -->
-    <section id="tab-torre" class="tab-panel">
+    <!-- PESTAÑA 3: ESQUEMA 2 - ELEVACIÓN DE TORRE -->
+    <section id="tab-torre" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-torre">
       <div class="grid-form">
         <div class="field">
-          <label for="torreTipo">Tipo de Torre</label>
+          <label for="torreTipo">Tipo de Torre (8 Modelos)</label>
           <select id="torreTipo">
-            <option value="autosoportada" selected>Autosoportada</option>
-            <option value="monopolo">Monopolo</option>
-            <option value="ventada">Ventada (con vientos y cámara de anclaje)</option>
-            <option value="arriostrada">Arriostrada (2 arriostradas + pedestal)</option>
+            <option value="arbol">1. Torre público tipo arbol</option>
+            <option value="monopolo">2. TORRE MONOPOLO</option>
+            <option value="autosoportada_normal" selected>3. Torre autosoportada con roldana normal</option>
+            <option value="arriostrada_escalera_gato">4. Torre arriostrada con escalera gato</option>
+            <option value="ventada_edificio">5. Torre ventada con edificio</option>
+            <option value="ventada_piso">6. Torre ventada de piso</option>
+            <option value="autosoportada_encima">7. TORRE AUTOSOPORTADA CON ROLDANA ENCIMA</option>
+            <option value="arriostrada_edificio_normal">8. Torre arriostrada con edificio normal</option>
           </select>
         </div>
 
         <div class="field">
           <label for="alturaTorre">Altura Torre + Base (m)</label>
-          <input type="number" step="0.01" id="alturaTorre" value="60.20" />
+          <input type="number" step="0.01" min="0.1" id="alturaTorre" value="60.20" />
         </div>
 
         <div class="field">
           <label for="alturaBase">Altura Base / Pedestal (m)</label>
-          <input type="number" step="0.01" id="alturaBase" value="0.50" />
+          <input type="number" step="0.01" min="0" id="alturaBase" value="0.50" />
         </div>
 
         <div class="field">
           <label for="roldanaSup">Roldana Superior (m)</label>
-          <input type="number" step="0.01" id="roldanaSup" value="60.10" />
+          <input type="number" step="0.01" min="0" id="roldanaSup" value="60.10" />
         </div>
 
         <div class="field">
           <label for="roldanaInf">Roldana Inferior (m)</label>
-          <input type="number" step="0.01" id="roldanaInf" value="58.90" />
+          <input type="number" step="0.01" min="0" id="roldanaInf" value="58.90" />
+        </div>
+
+        <div class="field">
+          <label for="alturaEdificio">Altura Edificio sin Parapeto (m)</label>
+          <input type="number" step="0.01" min="0" id="alturaEdificio" value="12.00" />
+        </div>
+
+        <div class="field">
+          <label for="alturaEscaleraGato">Altura Escalera Gato (m)</label>
+          <input type="number" step="0.01" min="0" id="alturaEscaleraGato" value="2.40" />
         </div>
       </div>
 
+      <div id="avisoTorre" class="notice" hidden></div>
+
       <div class="actions">
-        <button class="btn-secondary" id="btnActualizarTorre" type="button">Actualizar Vista</button>
-        <button class="btn-primary" id="btnDescargarTorre" type="button">Descargar PNG Diagrama 2</button>
+        <button class="btn-action btn-secondary" id="btnActualizarTorre" type="button">Actualizar Vista</button>
+        <button class="btn-action btn-primary" id="btnDescargarTorre" type="button">Descargar PNG Esquema 2</button>
       </div>
 
       <div class="canvas-wrap">
-        <canvas id="canvasTorre" width="960" height="1080"></canvas>
+        <canvas id="canvasTorre" width="960" height="1140"></canvas>
       </div>
     </section>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

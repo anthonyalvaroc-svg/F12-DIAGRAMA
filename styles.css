@@ -89,7 +89,7 @@ p.sub {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .field label {
@@ -117,6 +117,16 @@ p.sub {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+.notice {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
 .actions {
   display: flex;
   gap: 10px;
@@ -124,7 +134,7 @@ p.sub {
   margin-bottom: 20px;
 }
 
-button {
+.btn-action {
   padding: 11px 18px;
   border: none;
   border-radius: 8px;

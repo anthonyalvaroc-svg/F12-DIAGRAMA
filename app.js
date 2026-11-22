@@ -1,32 +1,69 @@
+const FONT_SIZE_RELLENO = 16;
+
+function setFuenteRelleno(ctx, color = "#111827", align = "center", baseline = "middle") {
+  ctx.fillStyle = color;
+  ctx.font = `bold ${FONT_SIZE_RELLENO}px Arial`;
+  ctx.textAlign = align;
+  ctx.textBaseline = baseline;
+}
+
 function activarTab(targetId, btnEl) {
   const tabButtons = document.querySelectorAll(".tab-btn");
   const tabPanels = document.querySelectorAll(".tab-panel");
-  tabButtons.forEach(b => b.classList.remove("active"));
-  tabPanels.forEach(p => p.classList.remove("active"));
-  if (btnEl) btnEl.classList.add("active");
+
+  tabButtons.forEach((b) => {
+    b.classList.remove("active");
+    b.setAttribute("aria-selected", "false");
+  });
+  tabPanels.forEach((p) => p.classList.remove("active"));
+
+  if (btnEl) {
+    btnEl.classList.add("active");
+    btnEl.setAttribute("aria-selected", "true");
+  }
   const panel = document.getElementById(targetId);
   if (panel) panel.classList.add("active");
+
   dibujarTodo();
 }
 
 window.activarTab = activarTab;
 
 function getSitio() {
-  const val = document.getElementById("sitio").value || "SITIO";
-  return val.trim().toUpperCase();
+  const input = document.getElementById("sitio");
+  const val = input ? input.value : "";
+  return val.trim().toUpperCase() || "SITIO";
 }
 
 function getSitioSlug() {
   return getSitio().replace(/[^A-Z0-9_-]+/g, "_") || "SITIO";
 }
 
-function formatNum(val, dec = 2) {
+function parsePositiveNum(val, fallback = 0) {
   const num = parseFloat(val);
-  return isNaN(num) ? (0).toFixed(dec) : num.toFixed(dec);
+  if (isNaN(num) || !isFinite(num)) return fallback;
+  return Math.max(0, num);
+}
+
+function formatNum(val, dec = 2, fallback = 0) {
+  return parsePositiveNum(val, fallback).toFixed(dec);
+}
+
+function setAviso(elementId, mensaje) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  if (mensaje) {
+    el.textContent = mensaje;
+    el.hidden = false;
+  } else {
+    el.textContent = "";
+    el.hidden = true;
+  }
 }
 
 function descargarCanvas(canvasId, prefijo) {
   const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
   const link = document.createElement("a");
   link.download = `${prefijo}_${getSitioSlug()}.png`;
   link.href = canvas.toDataURL("image/png");
@@ -67,10 +104,7 @@ function dibujarSimboloTorre(ctx, tipo, cx, cy, sizeMultiplier = 1) {
     ctx.stroke();
   }
 
-  ctx.fillStyle = "#111827";
-  ctx.font = `bold ${Math.max(11, Math.round(13 * sizeMultiplier))}px Arial`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
+  setFuenteRelleno(ctx, "#111827", "center", "middle");
   ctx.fillText("TORRE", cx, cy + textOffsetY);
   ctx.restore();
 }
@@ -94,23 +128,18 @@ function dibujarPozo(ctx, x, y, label) {
   ctx.lineTo(x + 3, y + 12);
   ctx.stroke();
 
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 15px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(label, x, y - 24);
+  setFuenteRelleno(ctx, "#111827", "center", "bottom");
+  ctx.fillText(label, x, y - 22);
   ctx.restore();
 }
 
-/* Puerta doble hoja en muro horizontal (abre hacia afuera si dirY > 0 o hacia arriba si dirY < 0) */
 function dibujarPuertaDobleHorizontal(ctx, x, y, anchoTotal, dirY = 1) {
   const half = anchoTotal / 2;
   ctx.save();
 
-  // Borrar tramo del muro
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(x - 2, y - 6, anchoTotal + 4, 12);
 
-  // Jambas / marcos laterales
   ctx.strokeStyle = "#111827";
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -120,20 +149,14 @@ function dibujarPuertaDobleHorizontal(ctx, x, y, anchoTotal, dirY = 1) {
   ctx.lineTo(x + anchoTotal, y + 6);
   ctx.stroke();
 
-  // Hoja izquierda
   ctx.lineWidth = 3.2;
   ctx.beginPath();
   ctx.moveTo(x, y);
   ctx.lineTo(x, y + dirY * half);
-  ctx.stroke();
-
-  // Hoja derecha
-  ctx.beginPath();
   ctx.moveTo(x + anchoTotal, y);
   ctx.lineTo(x + anchoTotal, y + dirY * half);
   ctx.stroke();
 
-  // Arcos de barrido punteados
   ctx.lineWidth = 1.6;
   ctx.setLineDash([4, 3]);
   ctx.beginPath();
@@ -154,11 +177,12 @@ function dibujarPuertaDobleHorizontal(ctx, x, y, anchoTotal, dirY = 1) {
    ========================================================= */
 function dibujarSpat() {
   const canvas = document.getElementById("canvasSpat");
+  if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
   const sitio = getSitio();
   const tipoTorre = document.getElementById("spatTipoTorre").value;
-  const cantPozos = parseInt(document.getElementById("cantidadPozos").value, 10) || 3;
+  const cantPozos = Math.min(6, Math.max(1, parseInt(document.getElementById("cantidadPozos").value, 10) || 3));
   const v50 = formatNum(document.getElementById("val50").value, 2);
   const v60 = formatNum(document.getElementById("val60").value, 2);
   const v70 = formatNum(document.getElementById("val70").value, 2);
@@ -178,22 +202,19 @@ function dibujarSpat() {
 
   const centerX = boxX + boxW / 2;
   ctx.save();
-  ctx.fillStyle = "#dc2626";
-  ctx.font = "bold 30px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(sitio, centerX, boxY + 36);
+  setFuenteRelleno(ctx, "#dc2626", "center", "middle");
+  ctx.fillText(sitio, centerX, boxY + 34);
   ctx.restore();
 
   dibujarSimboloTorre(ctx, tipoTorre, centerX, boxY + boxH / 2 + 25, 1);
 
   const posicionesPozos = [
-    { x: boxX + 265, y: boxY + 325 },
+    { x: boxX + 275, y: boxY + 325 },
     { x: boxX + 275, y: boxY + 125 },
+    { x: boxX + 190, y: boxY + 100 },
     { x: boxX + 95,  y: boxY + 125 },
     { x: boxX + 95,  y: boxY + 325 },
-    { x: boxX + 185, y: boxY + 95  },
-    { x: boxX + 145, y: boxY + 355 }
+    { x: boxX + 185, y: boxY + 350 }
   ];
 
   if (cantPozos > 1) {
@@ -214,7 +235,6 @@ function dibujarSpat() {
     dibujarPozo(ctx, posicionesPozos[i].x, posicionesPozos[i].y, `PT0${i + 1}`);
   }
 
-  // Puerta doble hoja en muro inferior donde sale el cable verde
   const pt01 = posicionesPozos[0];
   const doorWidth = 76;
   const doorX = pt01.x - 28;
@@ -243,9 +263,7 @@ function dibujarSpat() {
   ctx.fillRect(telX, telY, telW, telH);
   ctx.strokeRect(telX, telY, telW, telH);
 
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 14px Arial";
-  ctx.textAlign = "left";
+  setFuenteRelleno(ctx, "#111827", "left", "middle");
   ctx.fillText("TELUROMETRO", telX + 38, telY + 24);
   ctx.restore();
 
@@ -275,161 +293,173 @@ function dibujarSpat() {
     { pct: "70%-21MTS=", ohm: `${v70} OHMS`, x: 705, y: 815 }
   ];
 
-  lecturas.forEach(item => {
+  lecturas.forEach((item) => {
     ctx.save();
-    ctx.textAlign = "left";
-    ctx.fillStyle = "#111827";
-    ctx.font = "bold 17px Arial";
+    setFuenteRelleno(ctx, "#111827", "left", "top");
     ctx.fillText(item.pct, item.x, item.y);
 
-    ctx.fillStyle = "#dc2626";
-    ctx.font = "bold 28px Arial";
-    ctx.fillText(item.ohm, item.x + 12, item.y + 32);
+    setFuenteRelleno(ctx, "#dc2626", "left", "top");
+    ctx.fillText(item.ohm, item.x + 12, item.y + 24);
     ctx.restore();
   });
 
   ctx.save();
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 18px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("30 MTS", endRedX, endRedY + 28);
+  setFuenteRelleno(ctx, "#111827", "center", "top");
+  ctx.fillText("30 MTS", endRedX, endRedY + 12);
   ctx.restore();
+
+  setAviso("avisoSpat", "");
 }
 
 /* =========================================================
-   PESTAÑA 2: DIAGRAMA 1 - PERÍMETRO RECTANGULAR Y COORDENADAS INTERIORES
+   PESTAÑA 2: ESQUEMA 1 - PERÍMETRO Y COORDENADAS INCLINADAS
    ========================================================= */
-function dibujarCoordInterior(ctx, x, y, titulo, coordTexto, alignX = "left", alignY = "top") {
+function dibujarCoordInclinada(ctx, x, y, titulo, coordTexto, angleRad, w = 220, h = 64) {
   ctx.save();
-  const w = 215;
-  const h = 52;
-  let boxX = x;
-  let boxY = y;
+  ctx.translate(x, y);
+  ctx.rotate(angleRad);
 
-  if (alignX === "right") boxX = x - w;
-  if (alignY === "bottom") boxY = y - h;
-
-  ctx.fillStyle = "rgba(248, 250, 252, 0.94)";
-  ctx.strokeStyle = "#475569";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.94)";
+  ctx.strokeStyle = "#cbd5e1";
   ctx.lineWidth = 1.5;
-  ctx.fillRect(boxX, boxY, w, h);
-  ctx.strokeRect(boxX, boxY, w, h);
+  ctx.fillRect(-w / 2, -h / 2, w, h);
+  ctx.strokeRect(-w / 2, -h / 2, w, h);
 
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 11px Arial";
-  ctx.textAlign = "left";
-  ctx.fillText(titulo, boxX + 8, boxY + 17);
+  setFuenteRelleno(ctx, "#111827", "center", "middle");
+  ctx.fillText(titulo, 0, -12);
 
-  ctx.fillStyle = "#dc2626";
-  ctx.font = "bold 12px Arial";
-  ctx.fillText(coordTexto || "-", boxX + 8, boxY + 37);
+  setFuenteRelleno(ctx, "#111827", "center", "middle");
+  ctx.fillText(coordTexto || "-", 0, 12);
   ctx.restore();
 }
 
 function dibujarPerimetro() {
   const canvas = document.getElementById("canvasPerimetro");
+  if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
   const sitio = getSitio();
-  const ancho = formatNum(document.getElementById("perAncho").value, 2);
-  const largo = formatNum(document.getElementById("perLargo").value, 2);
+  const rawAncho = parseFloat(document.getElementById("perAncho").value);
+  const rawLargo = parseFloat(document.getElementById("perLargo").value);
+  const invalido = isNaN(rawAncho) || isNaN(rawLargo) || rawAncho <= 0 || rawLargo <= 0;
+
+  const numAncho = rawAncho > 0 ? rawAncho : 8.1;
+  const numLargo = rawLargo > 0 ? rawLargo : 10.0;
+  const ancho = numAncho.toFixed(2);
+  const largo = numLargo.toFixed(2);
+
   const tipoTorre = document.getElementById("perTipoTorre").value;
   const coordA = document.getElementById("coordA").value.trim();
   const coordB = document.getElementById("coordB").value.trim();
   const coordC = document.getElementById("coordC").value.trim();
   const coordD = document.getElementById("coordD").value.trim();
 
+  setAviso(
+    "avisoPerimetro",
+    invalido ? "Ingresa valores mayores a 0 en Ancho y Largo para calcular la proporción exacta." : ""
+  );
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Título superior
-  ctx.save();
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 20px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(`PERÍMETRO Y COORDENADAS — ${sitio}`, canvas.width / 2, 34);
-  ctx.restore();
-
-  // Rectángulo proporcional según Ancho y Largo
-  const numAncho = Math.max(1, parseFloat(document.getElementById("perAncho").value) || 8.1);
-  const numLargo = Math.max(1, parseFloat(document.getElementById("perLargo").value) || 10.0);
   const ratio = numAncho / numLargo;
-
-  const maxW = 640;
-  const maxH = 560;
+  const maxW = 660;
+  const maxH = 540;
+  const minSide = 310;
   let rectW = maxW;
   let rectH = maxH;
 
   if (ratio >= 1) {
     rectW = maxW;
-    rectH = Math.max(260, Math.min(maxH, maxW / ratio));
+    rectH = Math.max(minSide, Math.min(maxH, maxW / ratio));
   } else {
     rectH = maxH;
-    rectW = Math.max(280, Math.min(maxW, maxH * ratio));
+    rectW = Math.max(minSide, Math.min(maxW, maxH * ratio));
   }
 
   const rectX = (canvas.width - rectW) / 2;
-  const rectY = 120;
+  const rectY = 140;
 
-  ctx.save();
-  ctx.strokeStyle = "#111827";
-  ctx.lineWidth = 4.5;
-  ctx.strokeRect(rectX, rectY, rectW, rectH);
-
-  // Puerta doble hoja de acceso en el borde superior del rectángulo
-  const doorW = 76;
-  const doorX = rectX + 28;
+  const doorW = 84;
+  const doorX = rectX + 24;
   const doorY = rectY;
   dibujarPuertaDobleHorizontal(ctx, doorX, doorY, doorW, -1);
 
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 11px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("PUERTA DE ACCESO AL SITE", doorX + doorW / 2, doorY - 52);
-  ctx.restore();
-
-  // Nombre del Site dentro del recuadro
   ctx.save();
-  ctx.fillStyle = "#dc2626";
-  ctx.font = "bold 25px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(sitio, rectX + rectW / 2, rectY + rectH / 2 - 95);
-  ctx.restore();
+  const calloutX = rectX - 30;
+  const calloutY = rectY - 82;
+  const calloutW = 180;
+  const calloutH = 44;
+  ctx.fillStyle = "#ffffff";
+  ctx.strokeStyle = "#64748b";
+  ctx.lineWidth = 1.5;
+  ctx.fillRect(calloutX, calloutY, calloutW, calloutH);
+  ctx.strokeRect(calloutX, calloutY, calloutW, calloutH);
 
-  // Símbolo de torre al centro
-  dibujarSimboloTorre(ctx, tipoTorre, rectX + rectW / 2, rectY + rectH / 2 + 12, 0.92);
+  ctx.beginPath();
+  ctx.moveTo(calloutX + calloutW * 0.55, calloutY + calloutH);
+  ctx.lineTo(doorX + doorW * 0.5, doorY - 40);
+  ctx.stroke();
 
-  // Cotas exteriores de Ancho y Largo
-  ctx.save();
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 16px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(`ANCHO: MTS ${ancho}`, rectX + rectW / 2, rectY + rectH + 34);
-
-  ctx.save();
-  ctx.translate(rectX - 28, rectY + rectH / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillText(`LARGO: MTS ${largo}`, 0, 0);
+  setFuenteRelleno(ctx, "#111827", "center", "middle");
+  ctx.fillText("PUERTA DE ACCESO", calloutX + calloutW / 2, calloutY + calloutH / 2);
   ctx.restore();
 
   ctx.save();
-  ctx.translate(rectX + rectW + 28, rectY + rectH / 2);
-  ctx.rotate(Math.PI / 2);
-  ctx.fillText(`LARGO: MTS ${largo}`, 0, 0);
-  ctx.restore();
+  ctx.strokeStyle = "#111827";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(rectX, rectY, rectW, rectH);
   ctx.restore();
 
-  // Coordenadas en las 4 esquinas INTERIORES del rectángulo (A, B, C, D)
-  const pad = 12;
-  dibujarCoordInterior(ctx, rectX + pad, rectY + pad, "COORDENADA A (INT.):", coordA, "left", "top");
-  dibujarCoordInterior(ctx, rectX + rectW - pad, rectY + pad, "COORDENADA B (INT.):", coordB, "right", "top");
-  dibujarCoordInterior(ctx, rectX + rectW - pad, rectY + rectH - pad, "COORDENADA C (INT.):", coordC, "right", "bottom");
-  dibujarCoordInterior(ctx, rectX + pad, rectY + rectH - pad, "COORDENADA D (INT.):", coordD, "left", "bottom");
+  const centerRectX = rectX + rectW / 2;
+  const centerRectY = rectY + rectH / 2;
+
+  ctx.save();
+  ctx.strokeStyle = "#94a3b8";
+  ctx.lineWidth = 1.2;
+  ctx.fillStyle = "#ffffff";
+
+  [rectY - 34, rectY + rectH + 12].forEach((by) => {
+    ctx.fillRect(centerRectX - 72, by, 144, 26);
+    ctx.strokeRect(centerRectX - 72, by, 144, 26);
+    setFuenteRelleno(ctx, "#111827", "center", "middle");
+    ctx.fillText(`MTS ${ancho}`, centerRectX, by + 13);
+  });
+
+  [rectX - 38, rectX + rectW + 12].forEach((bx) => {
+    ctx.fillRect(bx, centerRectY - 72, 26, 144);
+    ctx.strokeRect(bx, centerRectY - 72, 26, 144);
+    ctx.save();
+    ctx.translate(bx + 13, centerRectY);
+    ctx.rotate(-Math.PI / 2);
+    setFuenteRelleno(ctx, "#111827", "center", "middle");
+    ctx.fillText(`MTS ${largo}`, 0, 0);
+    ctx.restore();
+  });
+  ctx.restore();
+
+  const sizeMult = Math.max(0.55, Math.min(0.85, Math.min(rectW, rectH) / 480));
+  ctx.save();
+  setFuenteRelleno(ctx, "#dc2626", "center", "middle");
+  ctx.fillText(sitio, centerRectX, centerRectY - 82 * sizeMult);
+  ctx.restore();
+
+  dibujarSimboloTorre(ctx, tipoTorre, centerRectX, centerRectY + 12 * sizeMult, sizeMult);
+
+  const diagOffsetX = Math.min(125, rectW * 0.24);
+  const diagOffsetY = Math.min(78, rectH * 0.22);
+  const boxW = Math.min(235, Math.max(165, rectW * 0.42));
+  const boxH = 62;
+
+  dibujarCoordInclinada(ctx, rectX + diagOffsetX, rectY + diagOffsetY, "COORDENADA A:", coordA, -Math.PI / 4, boxW, boxH);
+  dibujarCoordInclinada(ctx, rectX + rectW - diagOffsetX, rectY + diagOffsetY, "COORDENADA B:", coordB, Math.PI / 4, boxW, boxH);
+  dibujarCoordInclinada(ctx, rectX + rectW - diagOffsetX, rectY + rectH - diagOffsetY, "COORDENADA C:", coordC, -Math.PI / 4, boxW, boxH);
+  dibujarCoordInclinada(ctx, rectX + diagOffsetX, rectY + rectH - diagOffsetY, "COORDENADA D:", coordD, Math.PI / 4, boxW, boxH);
 }
 
 /* =========================================================
-   PESTAÑA 3: DIAGRAMA 2 - ELEVACIÓN DE TORRE
+   PESTAÑA 3: ESQUEMA 2 - ELEVACIÓN DE TORRE (8 TIPOS)
    ========================================================= */
 function dibujarRoldanaRF(ctx, x, y, radio = 18) {
   ctx.save();
@@ -441,51 +471,79 @@ function dibujarRoldanaRF(ctx, x, y, radio = 18) {
   ctx.fill();
   ctx.stroke();
 
-  // Eje central de la roldana
   ctx.beginPath();
   ctx.arc(x, y, 4, 0, Math.PI * 2);
   ctx.fillStyle = "#dc2626";
   ctx.fill();
 
-  // Etiqueta RF
-  ctx.fillStyle = "#dc2626";
-  ctx.font = "bold 14px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("RF", x, y - radio - 12);
+  setFuenteRelleno(ctx, "#dc2626", "center", "bottom");
+  ctx.fillText("RF", x, y - radio - 4);
   ctx.restore();
 }
 
 function dibujarTorreElevacion() {
   const canvas = document.getElementById("canvasTorre");
+  if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
-  const sitio = getSitio();
   const tipoTorre = document.getElementById("torreTipo").value;
-  const alturaTotal = formatNum(document.getElementById("alturaTorre").value, 2);
-  const alturaBase = formatNum(document.getElementById("alturaBase").value, 2);
-  const roldanaSup = formatNum(document.getElementById("roldanaSup").value, 2);
-  const roldanaInf = formatNum(document.getElementById("roldanaInf").value, 2);
+
+  const rawAlturaTotal = parseFloat(document.getElementById("alturaTorre").value);
+  const rawAlturaBase = parseFloat(document.getElementById("alturaBase").value);
+  const rawRoldanaSup = parseFloat(document.getElementById("roldanaSup").value);
+  const rawRoldanaInf = parseFloat(document.getElementById("roldanaInf").value);
+  const rawAlturaEdificio = parseFloat(document.getElementById("alturaEdificio").value);
+  const rawAlturaEscalera = parseFloat(document.getElementById("alturaEscaleraGato").value);
+
+  const numAlturaTotal = rawAlturaTotal > 0 ? rawAlturaTotal : 60.2;
+  const numAlturaBase = rawAlturaBase >= 0 ? rawAlturaBase : 0;
+  const numRoldanaSup = rawRoldanaSup >= 0 ? rawRoldanaSup : numAlturaTotal;
+  const numRoldanaInf = rawRoldanaInf >= 0 ? rawRoldanaInf : Math.max(0, numRoldanaSup - 1.2);
+  const numAlturaEdificio = rawAlturaEdificio >= 0 ? rawAlturaEdificio : 12.0;
+  const numAlturaEscalera = rawAlturaEscalera >= 0 ? rawAlturaEscalera : 2.4;
+
+  const avisos = [];
+  if (rawAlturaTotal <= 0 || isNaN(rawAlturaTotal)) {
+    avisos.push("La altura total debe ser mayor a 0 m.");
+  }
+  if (numAlturaBase > numAlturaTotal) {
+    avisos.push("La altura de base/pedestal supera la altura total ingresada.");
+  }
+  if (numRoldanaInf > numRoldanaSup) {
+    avisos.push("La cota de roldana inferior es mayor que la roldana superior.");
+  }
+  setAviso("avisoTorre", avisos.join(" "));
+
+  const alturaTotal = numAlturaTotal.toFixed(2);
+  const alturaBase = numAlturaBase.toFixed(2);
+  const roldanaSup = numRoldanaSup.toFixed(2);
+  const roldanaInf = numRoldanaInf.toFixed(2);
+  const alturaEdificio = numAlturaEdificio.toFixed(2);
+  const alturaEscalera = numAlturaEscalera.toFixed(2);
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.save();
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 20px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(`ELEVACIÓN DE TORRE — ${sitio} (${tipoTorre.toUpperCase()})`, canvas.width / 2, 34);
-  ctx.restore();
+  const tieneEdificio = tipoTorre === "ventada_edificio" || tipoTorre === "arriostrada_edificio_normal";
+  const groundY = tieneEdificio ? 760 : 980;
+  const buildingBottomY = 1060;
 
-  const groundY = 950;
-  const topY = 155;
+  const maxDrawH = tieneEdificio ? 540 : 760;
+  const minDrawH = 260;
+  const drawH = Math.max(minDrawH, Math.min(maxDrawH, (numAlturaTotal / 60) * 680));
+  const topY = groundY - drawH;
   const cx = 420;
-  const pedH = 42;
+
+  const pxPorMetro = drawH / Math.max(1, numAlturaTotal);
+  const pedH = Math.max(14, Math.min(drawH * 0.4, numAlturaBase * pxPorMetro));
   const towerBaseY = groundY - pedH;
 
+  const supY = Math.max(topY + 12, Math.min(groundY - 12, groundY - numRoldanaSup * pxPorMetro));
+  const infY = Math.max(topY + 24, Math.min(groundY - 8, groundY - numRoldanaInf * pxPorMetro));
+
   ctx.save();
-  // Línea de suelo
+
   ctx.strokeStyle = "#111827";
   ctx.lineWidth = 4;
   ctx.beginPath();
@@ -493,137 +551,71 @@ function dibujarTorreElevacion() {
   ctx.lineTo(780, groundY);
   ctx.stroke();
 
-  if (tipoTorre === "arriostrada") {
-    // Dibujar 2 torres arriostradas cada una con su pedestal
-    const centers = [cx - 135, cx + 135];
-    centers.forEach((tcx, idx) => {
-      const bHalfW = 48;
-      const tHalfW = 12;
+  if (tieneEdificio) {
+    const bldX = 180;
+    const bldW = 480;
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 3;
+    ctx.fillRect(bldX, groundY, bldW, buildingBottomY - groundY);
+    ctx.strokeRect(bldX, groundY, bldW, buildingBottomY - groundY);
 
-      // Pedestal de cada torre arriostrada
-      ctx.fillStyle = "#cbd5e1";
-      ctx.strokeStyle = "#111827";
-      ctx.lineWidth = 2.5;
-      ctx.fillRect(tcx - bHalfW - 6, groundY - pedH, bHalfW * 2 + 12, pedH);
-      ctx.strokeRect(tcx - bHalfW - 6, groundY - pedH, bHalfW * 2 + 12, pedH);
+    ctx.beginPath();
+    ctx.moveTo(90, buildingBottomY);
+    ctx.lineTo(780, buildingBottomY);
+    ctx.stroke();
 
-      // Fuste
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(tcx - tHalfW, topY + 60);
-      ctx.lineTo(tcx - bHalfW, towerBaseY);
-      ctx.moveTo(tcx + tHalfW, topY + 60);
-      ctx.lineTo(tcx + bHalfW, towerBaseY);
-      ctx.stroke();
+    const bldDimX = 720;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bldDimX, groundY);
+    ctx.lineTo(bldDimX, buildingBottomY);
+    ctx.stroke();
 
-      // Celosía
-      const niveles = 10;
-      ctx.lineWidth = 1.3;
-      for (let i = 0; i < niveles; i++) {
-        const y1 = topY + 60 + (towerBaseY - (topY + 60)) * (i / niveles);
-        const y2 = topY + 60 + (towerBaseY - (topY + 60)) * ((i + 1) / niveles);
-        const hw1 = tHalfW + (bHalfW - tHalfW) * (i / niveles);
-        const hw2 = tHalfW + (bHalfW - tHalfW) * ((i + 1) / niveles);
-        ctx.beginPath();
-        ctx.moveTo(tcx - hw1, y1);
-        ctx.lineTo(tcx + hw1, y1);
-        ctx.moveTo(tcx - hw1, y1);
-        ctx.lineTo(tcx + hw2, y2);
-        ctx.moveTo(tcx + hw1, y1);
-        ctx.lineTo(tcx - hw2, y2);
-        ctx.stroke();
-      }
+    setFuenteRelleno(ctx, "#111827", "left", "middle");
+    ctx.fillText("ALTURA EDIFICIO", bldDimX + 12, (groundY + buildingBottomY) / 2 - 12);
+    ctx.fillText(`SIN PARAPETO = ${alturaEdificio} m`, bldDimX + 12, (groundY + buildingBottomY) / 2 + 12);
+  }
 
-      // Vientos / cables de arriostramiento hacia el suelo
-      ctx.strokeStyle = "#0284c7";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6, 4]);
-      ctx.beginPath();
-      ctx.moveTo(tcx - tHalfW, topY + 150);
-      ctx.lineTo(tcx - 110, groundY);
-      ctx.moveTo(tcx + tHalfW, topY + 150);
-      ctx.lineTo(tcx + 110, groundY);
-      ctx.stroke();
-      ctx.setLineDash([]);
+  if (tipoTorre === "arbol") {
+    ctx.fillStyle = "#cbd5e1";
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 2.5;
+    ctx.fillRect(cx - 58, groundY - pedH, 116, pedH);
+    ctx.strokeRect(cx - 58, groundY - pedH, 116, pedH);
 
-      ctx.fillStyle = "#111827";
-      ctx.font = "bold 12px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(`ARRIOSTRADA ${idx + 1}`, tcx, groundY + 22);
-    });
-  } else if (tipoTorre === "ventada") {
-    // Torre ventada con vientos y cámara de anclaje
-    const bHalfW = 75;
-    const tHalfW = 18;
+    ctx.fillStyle = "#854d0e";
+    ctx.beginPath();
+    ctx.moveTo(cx - 18, towerBaseY);
+    ctx.lineTo(cx - 10, topY + drawH * 0.28);
+    ctx.lineTo(cx + 10, topY + drawH * 0.28);
+    ctx.lineTo(cx + 18, towerBaseY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
 
-    // Pedestal
+    ctx.fillStyle = "#15803d";
+    ctx.beginPath();
+    ctx.ellipse(cx, topY + drawH * 0.24, 68, drawH * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  } else if (tipoTorre === "monopolo") {
     ctx.fillStyle = "#e2e8f0";
     ctx.strokeStyle = "#111827";
     ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - bHalfW - 8, groundY - pedH, bHalfW * 2 + 16, pedH);
-    ctx.strokeRect(cx - bHalfW - 8, groundY - pedH, bHalfW * 2 + 16, pedH);
+    ctx.fillRect(cx - 48, groundY - pedH, 96, pedH);
+    ctx.strokeRect(cx - 48, groundY - pedH, 96, pedH);
 
-    // Fuste ventada
-    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(cx - tHalfW, topY + 25);
-    ctx.lineTo(cx - bHalfW, towerBaseY);
-    ctx.moveTo(cx + tHalfW, topY + 25);
-    ctx.lineTo(cx + bHalfW, towerBaseY);
+    ctx.moveTo(cx - 18, topY);
+    ctx.lineTo(cx - 38, towerBaseY);
+    ctx.moveTo(cx + 18, topY);
+    ctx.lineTo(cx + 38, towerBaseY);
     ctx.stroke();
 
-    const niveles = 11;
-    ctx.lineWidth = 1.5;
-    for (let i = 0; i < niveles; i++) {
-      const y1 = topY + 25 + (towerBaseY - (topY + 25)) * (i / niveles);
-      const y2 = topY + 25 + (towerBaseY - (topY + 25)) * ((i + 1) / niveles);
-      const hw1 = tHalfW + (bHalfW - tHalfW) * (i / niveles);
-      const hw2 = tHalfW + (bHalfW - tHalfW) * ((i + 1) / niveles);
-      ctx.beginPath();
-      ctx.moveTo(cx - hw1, y1);
-      ctx.lineTo(cx + hw1, y1);
-      ctx.moveTo(cx - hw1, y1);
-      ctx.lineTo(cx + hw2, y2);
-      ctx.moveTo(cx + hw1, y1);
-      ctx.lineTo(cx - hw2, y2);
-      ctx.stroke();
-    }
-
-    // Vientos tensorizados a ambos lados
-    const ancLeftX = cx - 205;
-    const ancRightX = cx + 205;
-    const ancY = groundY;
-
-    ctx.strokeStyle = "#0284c7";
-    ctx.lineWidth = 2.2;
-    ctx.beginPath();
-    ctx.moveTo(cx - tHalfW, topY + 95);
-    ctx.lineTo(ancLeftX, ancY - 14);
-    ctx.moveTo(cx - 38, topY + 360);
-    ctx.lineTo(ancLeftX, ancY - 14);
-    ctx.moveTo(cx + tHalfW, topY + 95);
-    ctx.lineTo(ancRightX, ancY - 14);
-    ctx.moveTo(cx + 38, topY + 360);
-    ctx.lineTo(ancRightX, ancY - 14);
-    ctx.stroke();
-
-    // Cámaras de anclaje izquierda y derecha
-    [ancLeftX, ancRightX].forEach((ax, idx) => {
-      ctx.fillStyle = "#fef3c7";
-      ctx.strokeStyle = "#111827";
-      ctx.lineWidth = 2.5;
-      ctx.fillRect(ax - 24, ancY - 22, 48, 22);
-      ctx.strokeRect(ax - 24, ancY - 22, 48, 22);
-
-      ctx.fillStyle = "#111827";
-      ctx.font = "bold 11px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("CÁMARA DE", ax, ancY + 16);
-      ctx.fillText(`ANCLAJE ${idx + 1}`, ax, ancY + 30);
-    });
-  } else {
-    // Autosoportada o Monopolo
-    const baseHalfW = 115;
+    dibujarRoldanaRF(ctx, cx, supY, 18);
+  } else if (tipoTorre === "autosoportada_normal" || tipoTorre === "autosoportada_encima") {
+    const baseHalfW = 110;
     const topHalfW = 24;
 
     ctx.fillStyle = "#e2e8f0";
@@ -636,119 +628,132 @@ function dibujarTorreElevacion() {
 
     ctx.strokeStyle = "#111827";
     ctx.lineWidth = 3;
-
-    if (tipoTorre === "monopolo") {
-      ctx.beginPath();
-      ctx.moveTo(cx - topHalfW, topY);
-      ctx.lineTo(cx - baseHalfW * 0.45, towerBaseY);
-      ctx.moveTo(cx + topHalfW, topY);
-      ctx.lineTo(cx + baseHalfW * 0.45, towerBaseY);
-      ctx.stroke();
-    } else {
-      ctx.beginPath();
-      ctx.moveTo(cx - topHalfW, topY);
-      ctx.lineTo(cx - baseHalfW, towerBaseY);
-      ctx.moveTo(cx + topHalfW, topY);
-      ctx.lineTo(cx + baseHalfW, towerBaseY);
-      ctx.stroke();
-
-      const niveles = 12;
-      ctx.lineWidth = 1.6;
-      for (let i = 0; i < niveles; i++) {
-        const y1 = topY + (towerBaseY - topY) * (i / niveles);
-        const y2 = topY + (towerBaseY - topY) * ((i + 1) / niveles);
-        const hw1 = topHalfW + (baseHalfW - topHalfW) * (i / niveles);
-        const hw2 = topHalfW + (baseHalfW - topHalfW) * ((i + 1) / niveles);
-        ctx.beginPath();
-        ctx.moveTo(cx - hw1, y1);
-        ctx.lineTo(cx + hw1, y1);
-        ctx.moveTo(cx - hw1, y1);
-        ctx.lineTo(cx + hw2, y2);
-        ctx.moveTo(cx + hw1, y1);
-        ctx.lineTo(cx - hw2, y2);
-        ctx.stroke();
-      }
-    }
-
-    // Pararrayos superior y plataforma
-    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(cx, topY);
-    ctx.lineTo(cx, topY - 65);
-    ctx.strokeRect(cx - 75, topY + 55, 150, 12);
+    ctx.moveTo(cx - topHalfW, topY);
+    ctx.lineTo(cx - baseHalfW, towerBaseY);
+    ctx.moveTo(cx + topHalfW, topY);
+    ctx.lineTo(cx + baseHalfW, towerBaseY);
     ctx.stroke();
 
-    // Roldana grande con etiqueta RF para Autosoportada y Monopolo
-    dibujarRoldanaRF(ctx, cx, topY + 25, 22);
+    const niveles = 12;
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < niveles; i++) {
+      const y1 = topY + (towerBaseY - topY) * (i / niveles);
+      const y2 = topY + (towerBaseY - topY) * ((i + 1) / niveles);
+      const hw1 = topHalfW + (baseHalfW - topHalfW) * (i / niveles);
+      const hw2 = topHalfW + (baseHalfW - topHalfW) * ((i + 1) / niveles);
+      ctx.beginPath();
+      ctx.moveTo(cx - hw1, y1);
+      ctx.lineTo(cx + hw1, y1);
+      ctx.moveTo(cx - hw1, y1);
+      ctx.lineTo(cx + hw2, y2);
+      ctx.moveTo(cx + hw1, y1);
+      ctx.lineTo(cx - hw2, y2);
+      ctx.stroke();
+    }
+
+    const roldanaPosY = tipoTorre === "autosoportada_encima" ? Math.max(40, topY - 26) : supY;
+    dibujarRoldanaRF(ctx, cx, roldanaPosY, 18);
+  } else if (tipoTorre === "arriostrada_escalera_gato" || tipoTorre === "arriostrada_edificio_normal") {
+    ctx.fillStyle = "#cbd5e1";
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 2.5;
+    ctx.fillRect(cx - 32, groundY - pedH, 64, pedH);
+    ctx.strokeRect(cx - 32, groundY - pedH, 64, pedH);
+
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, topY);
+    ctx.lineTo(cx, towerBaseY);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#0284c7";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, topY + (towerBaseY - topY) * 0.35);
+    ctx.lineTo(cx + 125, towerBaseY);
+    ctx.stroke();
+
+    if (tipoTorre === "arriostrada_escalera_gato") {
+      const egH = Math.max(24, Math.min(120, numAlturaEscalera * pxPorMetro * 3));
+      ctx.strokeStyle = "#111827";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(cx - 26, towerBaseY - egH, 16, egH);
+      setFuenteRelleno(ctx, "#111827", "left", "middle");
+      ctx.fillText(`ALTURA ESCALERA GATO = ${alturaEscalera} m`, cx + 140, towerBaseY - egH / 2);
+    }
+  } else if (tipoTorre === "ventada_edificio" || tipoTorre === "ventada_piso") {
+    const bHalfW = 48;
+    const tHalfW = 14;
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 2.5;
+    ctx.fillRect(cx - bHalfW - 6, groundY - pedH, bHalfW * 2 + 12, pedH);
+    ctx.strokeRect(cx - bHalfW - 6, groundY - pedH, bHalfW * 2 + 12, pedH);
+
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.moveTo(cx - tHalfW, topY);
+    ctx.lineTo(cx - bHalfW, towerBaseY);
+    ctx.moveTo(cx + tHalfW, topY);
+    ctx.lineTo(cx + bHalfW, towerBaseY);
+    ctx.stroke();
+
+    const spanX = tipoTorre === "ventada_piso" ? 210 : 155;
+    ctx.strokeStyle = "#0284c7";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx - tHalfW, topY + (towerBaseY - topY) * 0.25);
+    ctx.lineTo(cx - spanX, groundY);
+    ctx.moveTo(cx + tHalfW, topY + (towerBaseY - topY) * 0.25);
+    ctx.lineTo(cx + spanX, groundY);
+    ctx.stroke();
+
+    if (tipoTorre === "ventada_piso") {
+      ctx.fillStyle = "#fef3c7";
+      ctx.strokeStyle = "#111827";
+      ctx.fillRect(cx - spanX - 18, groundY - 16, 36, 16);
+      ctx.strokeRect(cx - spanX - 18, groundY - 16, 36, 16);
+      ctx.fillRect(cx + spanX - 18, groundY - 16, 36, 16);
+      ctx.strokeRect(cx + spanX - 18, groundY - 16, 36, 16);
+    }
   }
 
-  // Cota ROLDANA SUPERIOR (izquierda)
-  const supY = topY + 25;
   ctx.strokeStyle = "#0284c7";
   ctx.lineWidth = 2;
   ctx.setLineDash([4, 3]);
   ctx.beginPath();
-  ctx.moveTo(150, supY);
+  ctx.moveTo(140, supY);
   ctx.lineTo(cx - 24, supY);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 14px Arial";
-  ctx.textAlign = "left";
-  ctx.fillText("ROLDANA", 145, supY - 22);
-  ctx.fillText("SUPERIOR", 145, supY - 6);
-  ctx.fillStyle = "#dc2626";
-  ctx.font = "bold 16px Arial";
-  ctx.fillText(`${roldanaSup} m`, 145, supY + 16);
-
-  // Cota ROLDANA INFERIOR (derecha)
-  const infY = topY + 115;
-  ctx.strokeStyle = "#0284c7";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([4, 3]);
-  ctx.beginPath();
   ctx.moveTo(cx + 28, infY);
-  ctx.lineTo(570, infY);
+  ctx.lineTo(560, infY);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 14px Arial";
-  ctx.textAlign = "left";
-  ctx.fillText("ROLDANA", 580, infY - 22);
-  ctx.fillText("INFERIOR", 580, infY - 6);
-  ctx.fillStyle = "#dc2626";
-  ctx.font = "bold 16px Arial";
-  ctx.fillText(`${roldanaInf} m`, 580, infY + 16);
+  setFuenteRelleno(ctx, "#111827", "left", "middle");
+  ctx.fillText(`ALTURA ROLDANA SUPERIOR = ${roldanaSup} m`, 110, supY - 18);
+  ctx.fillText(`ALTURA ROLDANA INFERIOR = ${roldanaInf} m`, 565, infY - 18);
 
-  // Cota ALTURA DE TORRE + BASE (extrema derecha)
-  const dimX = 740;
+  const dimX = 720;
   ctx.strokeStyle = "#111827";
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(cx + 30, topY);
+  ctx.moveTo(cx + 25, topY);
   ctx.lineTo(dimX, topY);
-  ctx.moveTo(cx + 125, groundY);
+  ctx.moveTo(cx + 120, groundY);
   ctx.lineTo(dimX, groundY);
   ctx.moveTo(dimX - 10, topY);
   ctx.lineTo(dimX - 10, groundY);
   ctx.stroke();
 
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 14px Arial";
-  ctx.textAlign = "left";
-  ctx.fillText("ALTURA DE", dimX + 6, (topY + groundY) / 2 - 22);
-  ctx.fillText("TORRE+BASE", dimX + 6, (topY + groundY) / 2 - 4);
-  ctx.fillStyle = "#dc2626";
-  ctx.font = "bold 17px Arial";
-  ctx.fillText(`${alturaTotal} m`, dimX + 6, (topY + groundY) / 2 + 18);
+  const midDimY = (topY + groundY) / 2;
+  setFuenteRelleno(ctx, "#111827", "left", "middle");
+  ctx.fillText("ALTURA TORRE + BASE =", dimX + 8, midDimY - 12);
+  ctx.fillText(`${alturaTotal} m`, dimX + 8, midDimY + 12);
 
-  // Cota ALTURA BASE
-  ctx.fillStyle = "#111827";
-  ctx.font = "bold 13px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(`BASE / PEDESTAL: ${alturaBase} m`, cx, groundY + 46);
+  setFuenteRelleno(ctx, "#111827", "center", "top");
+  ctx.fillText(`ALTURA BASE = ${alturaBase} m`, cx, groundY + 12);
 
   ctx.restore();
 }
@@ -759,14 +764,22 @@ function dibujarTodo() {
   dibujarTorreElevacion();
 }
 
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const targetId = btn.getAttribute("data-tab");
+    if (targetId) activarTab(targetId, btn);
+  });
+});
+
 const allInputs = [
   "sitio",
   "spatTipoTorre", "cantidadPozos", "val50", "val60", "val70",
   "perAncho", "perLargo", "perTipoTorre", "coordA", "coordB", "coordC", "coordD",
-  "torreTipo", "alturaTorre", "alturaBase", "roldanaSup", "roldanaInf"
+  "torreTipo", "alturaTorre", "alturaBase", "roldanaSup", "roldanaInf",
+  "alturaEdificio", "alturaEscaleraGato"
 ];
 
-allInputs.forEach(id => {
+allInputs.forEach((id) => {
   const el = document.getElementById(id);
   if (el) {
     el.addEventListener("input", dibujarTodo);
@@ -778,17 +791,17 @@ document.getElementById("btnActualizarSpat").addEventListener("click", dibujarSp
 document.getElementById("btnDescargarSpat").addEventListener("click", () => descargarCanvas("canvasSpat", "ESQUEMA_SPAT"));
 
 document.getElementById("btnActualizarPer").addEventListener("click", dibujarPerimetro);
-document.getElementById("btnDescargarPer").addEventListener("click", () => descargarCanvas("canvasPerimetro", "DIAGRAMA_1_PERIMETRO"));
+document.getElementById("btnDescargarPer").addEventListener("click", () => descargarCanvas("canvasPerimetro", "ESQUEMA_1_PERIMETRO"));
 
 document.getElementById("btnActualizarTorre").addEventListener("click", dibujarTorreElevacion);
-document.getElementById("btnDescargarTorre").addEventListener("click", () => descargarCanvas("canvasTorre", "DIAGRAMA_2_TORRE"));
+document.getElementById("btnDescargarTorre").addEventListener("click", () => descargarCanvas("canvasTorre", "ESQUEMA_2_TORRE"));
 
 dibujarTodo();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-      regs.forEach(reg => reg.unregister());
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((reg) => reg.unregister());
     }).catch(() => {});
   });
 }
